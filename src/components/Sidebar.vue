@@ -7,7 +7,7 @@
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" absolute temporary app>
+    <v-navigation-drawer v-model="drawer" absolute temporary app style="z-index: 1000">
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title class="title">
