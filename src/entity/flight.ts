@@ -49,7 +49,7 @@ export class Flight {
       return this.puck && (this.puck[0] <= x) && (x <= this.puck[0] + this.puck[2]) && (this.puck[1] <= y) && (y <= this.puck[1] + this.puck[3])
     }
 
-    public percentComplete () {
+    public percentComplete () :number {
       const totalMinutes = this.estimated_time_arrival.diff(this.estimated_time_departure, 'minutes').minutes
       const elapsedMinutes = luxon.DateTime.utc().diff(this.estimated_time_departure, 'minutes').minutes
       const elapsedPercentage = (elapsedMinutes / totalMinutes) * 100
@@ -59,7 +59,7 @@ export class Flight {
       if (elapsedPercentage < 0) {
         return 0
       }
-      return elapsedPercentage.toFixed(2)
+      return +elapsedPercentage.toFixed(2)
     }
 
     public asString () : string {

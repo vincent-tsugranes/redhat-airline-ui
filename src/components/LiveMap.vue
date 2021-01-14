@@ -10,6 +10,7 @@
           v-for="marker in this.markers"
           :key="marker.id"
           :lat-lng="marker.position"
+          :icon="marker.icon"
         >
           <l-tooltip :content="marker.tooltip" />
       </l-marker>
@@ -18,6 +19,7 @@
           v-for="line in this.lines"
           :key="line.id"
           :lat-lngs="line.latlngs"
+          :color="line.color"
         >
           <l-tooltip :content="line.tooltip" />
       </l-polyline>
@@ -35,8 +37,9 @@ import { Airport } from '../entity/airport'
 import * as luxon from 'luxon'
 import { LMap, LTileLayer, LMarker, LTooltip, LPolyline } from 'vue2-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Icon, LatLng } from 'leaflet'
-import { GeodesicLine } from 'leaflet.geodesic'
+import { Icon } from 'leaflet'
+import LatLon from 'geodesy/latlon-nvector-spherical'
+
 type D = Icon.Default & {
   _getIconUrl?: string;
 };
@@ -91,22 +94,56 @@ export default class LiveMap extends Vue {
       this.addMarkerForAirport(flight.departure_airport)
       this.addMarkerForAirport(flight.arrival_airport)
 
-      const line = new GeodesicLine([
-        new LatLng(flight.departure_airport.latitude, flight.departure_airport.longitude),
-        new LatLng(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
-      ])
+      const startCoordinates = new LatLon(flight.departure_airport.latitude, flight.departure_airport.longitude)
+      const endCoordinates = new LatLon(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
 
-      /*
-      const flightLine = {
-        id: flight.id,
+      const flightCompleteLine = {
+        id: flight.id + '-start',
         tooltip: flight.asString(),
+        color: 'blue',
         latlngs: [
-          [flight.departure_airport.latitude, flight.departure_airport.longitude],
-          [flight.arrival_airport.latitude, flight.arrival_airport.longitude]
+          [flight.departure_airport.latitude, flight.departure_airport.longitude]
         ]
       }
-      */
-      this.lines.push(line)
+
+      const flightPercentComplete = flight.percentComplete() / 100
+      const currentAircraftCoordinates = startCoordinates.intermediatePointTo(endCoordinates, flightPercentComplete)
+
+      for (var i = 0; i < 10; i++) {
+        const fraction = (i * 5) / 100
+        const point = startCoordinates.intermediatePointTo(currentAircraftCoordinates, fraction)
+        flightCompleteLine.latlngs.push([point.latitude, point.longitude])
+      }
+      flightCompleteLine.latlngs.push([currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude])
+      this.lines.push(flightCompleteLine)
+
+      const flightMarker = {
+        id: flight.id,
+        position: {
+          lat: currentAircraftCoordinates.latitude,
+          lng: currentAircraftCoordinates.longitude
+        },
+        tooltip: flight.asString()
+        // icon: airplaneIcon
+      }
+      this.markers.push(flightMarker)
+
+      const flightRemainingLine = {
+        id: flight.id + '-end',
+        tooltip: flight.asString(),
+        color: 'grey',
+        latlngs: [
+          [currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude]
+        ]
+      }
+
+      for (var j = 0; j < 10; j++) {
+        const fraction = (j * 5) / 100
+        const point = currentAircraftCoordinates.intermediatePointTo(endCoordinates, fraction)
+        flightRemainingLine.latlngs.push([point.latitude, point.longitude])
+      }
+      flightRemainingLine.latlngs.push([endCoordinates.latitude, endCoordinates.longitude])
+      this.lines.push(flightRemainingLine)
     })
   }
 
