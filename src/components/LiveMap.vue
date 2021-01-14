@@ -115,11 +115,9 @@ export default class LiveMap extends Vue {
         const fraction = (i * 5) / 100
         const point = startCoordinates.intermediatePointTo(currentAircraftCoordinates, fraction)
         completePoints.push(new LatLon(point.latitude, point.longitude))
-        // flightCompleteLine.latlngs.push([point.latitude, point.longitude])
       }
 
       completePoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
-      // flightCompleteLine.latlngs.push([currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude])
 
       const splitCompletePoints :Array<LatLon> = splitLineString(completePoints)
       splitCompletePoints.forEach(point => {
@@ -152,11 +150,9 @@ export default class LiveMap extends Vue {
       for (var j = 0; j < 20; j++) {
         const fraction = (j * 5) / 100
         const point = currentAircraftCoordinates.intermediatePointTo(endCoordinates, fraction)
-        // flightRemainingLine.latlngs.push([point.latitude, point.longitude])
         remainingPoints.push(new LatLon(point.latitude, point.longitude))
       }
       remainingPoints.push(new LatLon(endCoordinates.latitude, endCoordinates.longitude))
-      // flightRemainingLine.latlngs.push([endCoordinates.latitude, endCoordinates.longitude])
 
       const splitRemainingPoints :Array<LatLon> = splitLineString(remainingPoints)
       splitRemainingPoints.forEach(point => {
@@ -167,7 +163,6 @@ export default class LiveMap extends Vue {
   }
 
   private addMarkerForAirport (airport :Airport) {
-    // const departureMarker = latLng(flight.departure_airport.latitude, flight.departure_airport.longitude)
     const marker = {
       id: airport.iata,
       position: {
