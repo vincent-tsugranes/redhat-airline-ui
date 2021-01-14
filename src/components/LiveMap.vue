@@ -39,7 +39,7 @@ import { LMap, LTileLayer, LMarker, LTooltip, LPolyline } from 'vue2-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Icon } from 'leaflet'
 import LatLon from 'geodesy/latlon-nvector-spherical'
-
+import { splitLineString } from '../entity/utilities/antimeridian'
 type D = Icon.Default & {
   _getIconUrl?: string;
 };
@@ -105,16 +105,26 @@ export default class LiveMap extends Vue {
           [flight.departure_airport.latitude, flight.departure_airport.longitude]
         ]
       }
+      const completePoints :Array<LatLon> = []
+      completePoints.push(new LatLon(flight.departure_airport.latitude, flight.departure_airport.longitude))
 
       const flightPercentComplete = flight.percentComplete() / 100
       const currentAircraftCoordinates = startCoordinates.intermediatePointTo(endCoordinates, flightPercentComplete)
 
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 20; i++) {
         const fraction = (i * 5) / 100
         const point = startCoordinates.intermediatePointTo(currentAircraftCoordinates, fraction)
-        flightCompleteLine.latlngs.push([point.latitude, point.longitude])
+        completePoints.push(new LatLon(point.latitude, point.longitude))
+        // flightCompleteLine.latlngs.push([point.latitude, point.longitude])
       }
-      flightCompleteLine.latlngs.push([currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude])
+
+      completePoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
+      // flightCompleteLine.latlngs.push([currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude])
+
+      const splitCompletePoints :Array<LatLon> = splitLineString(completePoints)
+      splitCompletePoints.forEach(point => {
+        flightCompleteLine.latlngs.push([point.latitude, point.longitude])
+      })
       this.lines.push(flightCompleteLine)
 
       const flightMarker = {
@@ -136,13 +146,22 @@ export default class LiveMap extends Vue {
           [currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude]
         ]
       }
+      const remainingPoints :Array<LatLon> = []
+      remainingPoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
 
-      for (var j = 0; j < 10; j++) {
+      for (var j = 0; j < 20; j++) {
         const fraction = (j * 5) / 100
         const point = currentAircraftCoordinates.intermediatePointTo(endCoordinates, fraction)
-        flightRemainingLine.latlngs.push([point.latitude, point.longitude])
+        // flightRemainingLine.latlngs.push([point.latitude, point.longitude])
+        remainingPoints.push(new LatLon(point.latitude, point.longitude))
       }
-      flightRemainingLine.latlngs.push([endCoordinates.latitude, endCoordinates.longitude])
+      remainingPoints.push(new LatLon(endCoordinates.latitude, endCoordinates.longitude))
+      // flightRemainingLine.latlngs.push([endCoordinates.latitude, endCoordinates.longitude])
+
+      const splitRemainingPoints :Array<LatLon> = splitLineString(remainingPoints)
+      splitRemainingPoints.forEach(point => {
+        flightRemainingLine.latlngs.push([point.latitude, point.longitude])
+      })
       this.lines.push(flightRemainingLine)
     })
   }
