@@ -24,7 +24,7 @@ export default class Schedule extends Vue {
   backgroundCanvasContext = this.backgroundCanvas.getContext('2d')
   mouseoverCanvas = document.createElement('canvas')
   mouseoverCanvasContext = this.mouseoverCanvas.getContext('2d')
-  aircraftBarWidth = 90
+  aircraftBarWidth = 70
   topOffset = 64
   aircraftLineHeightMin = 50
   aircraftLineHeightMax = 100
@@ -197,6 +197,7 @@ export default class Schedule extends Vue {
     const scheduleDiv = document.getElementById('schedule')
 
     if (scheduleDiv != null) {
+      scheduleDiv.innerHTML = ''
       this.mouseoverCanvas.setAttribute('id', 'mouseoverCanvas')
       this.mouseoverCanvas.setAttribute('class', 'mouseoverCanvas')
       this.mouseoverCanvas.height = screenHeight
@@ -281,6 +282,13 @@ export default class Schedule extends Vue {
         y + 40)
       this.mouseoverCanvasContext.fillText('Status:' + flight.status(), effectiveX, y + 50)
       this.mouseoverCanvasContext.fillText('Percent Complete:' + flight.percentComplete(), effectiveX, y + 60)
+      let crewmemberIndex = 70
+      flight.crewmembers.forEach(crewmember => {
+        if (this.mouseoverCanvasContext != null) {
+          this.mouseoverCanvasContext.fillText('Crew: ' + crewmember.first_name + ' ' + crewmember.last_name, effectiveX, y + crewmemberIndex)
+          crewmemberIndex += 10
+        }
+      })
       this.mouseoverCanvasContext.closePath()
     }
   }

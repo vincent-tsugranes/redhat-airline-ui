@@ -37,7 +37,7 @@ import { Airport } from '../entity/airport'
 import * as luxon from 'luxon'
 import { LMap, LTileLayer, LMarker, LTooltip, LPolyline } from 'vue2-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Icon } from 'leaflet'
+import { Icon, Point } from 'leaflet'
 import LatLon from 'geodesy/latlon-nvector-spherical'
 import { splitLineString } from '../entity/utilities/antimeridian'
 type D = Icon.Default & {
@@ -111,8 +111,9 @@ export default class LiveMap extends Vue {
       const flightPercentComplete = flight.percentComplete() / 100
       const currentAircraftCoordinates = startCoordinates.intermediatePointTo(endCoordinates, flightPercentComplete)
 
-      for (var i = 0; i < 20; i++) {
-        const fraction = (i * 5) / 100
+      const iterations = 50
+      for (var i = 0; i < iterations; i++) {
+        const fraction = (i * (100 / iterations)) / 100
         const point = startCoordinates.intermediatePointTo(currentAircraftCoordinates, fraction)
         completePoints.push(new LatLon(point.latitude, point.longitude))
       }
@@ -125,13 +126,25 @@ export default class LiveMap extends Vue {
       })
       this.lines.push(flightCompleteLine)
 
+      const flightIcon = new Icon({
+        iconUrl: require('../assets/airplaneIcon.svg'),
+        iconSize: new Point(32, 32)
+      })
       const flightMarker = {
         id: flight.id,
         position: {
           lat: currentAircraftCoordinates.latitude,
           lng: currentAircraftCoordinates.longitude
         },
-        tooltip: flight.asString()
+        tooltip: flight.asString(),
+        icon: flightIcon
+        /*
+        icon: {
+          iconUrl: '/public/img/icons/airplaneIcon.svg',
+          iconSize: [32, 37],
+          iconAnchor: [16, 37]
+        }
+        */
         // icon: airplaneIcon
       }
       this.markers.push(flightMarker)
@@ -147,8 +160,8 @@ export default class LiveMap extends Vue {
       const remainingPoints :Array<LatLon> = []
       remainingPoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
 
-      for (var j = 0; j < 20; j++) {
-        const fraction = (j * 5) / 100
+      for (var j = 0; j < iterations; j++) {
+        const fraction = (j * (100 / iterations)) / 100
         const point = currentAircraftCoordinates.intermediatePointTo(endCoordinates, fraction)
         remainingPoints.push(new LatLon(point.latitude, point.longitude))
       }
