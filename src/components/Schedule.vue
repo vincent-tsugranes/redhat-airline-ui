@@ -2,6 +2,10 @@
       <div>
         <div id="schedule" class="row" refs='schedule' style="padding-top: 20px">
         </div>
+        <v-card v-if="displayMouseOverFlight" absolute left centered shaped style="z-index: 1000" elevation="2" outlined>
+            <v-card-title>Flight Title</v-card-title>
+            <v-card-text>Flight Details Here</v-card-text>
+        </v-card>
       </div>
 </template>
 
@@ -29,6 +33,14 @@ export default class Schedule extends Vue {
   aircraftLineHeightMin = 50
   aircraftLineHeightMax = 100
   flightPuckHeight = 25
+  displayMouseOverFlight = false
+  mouseOverFlight: Flight = null
+
+  data () {
+    return {
+      mouseOverFlight: this.mouseOverFlight
+    }
+  }
 
   mounted () {
     this.GetFlights()
@@ -59,6 +71,218 @@ export default class Schedule extends Vue {
     })
 
     return aircraft
+  }
+
+  private DisplayFlights () {
+    console.log('Displaying Flights')
+  }
+
+  private DrawCanvas () {
+    let screenWidth = 1024
+    let screenHeight = 768
+
+    screenWidth = window.innerWidth
+    screenHeight = window.innerHeight - this.topOffset
+
+    window.addEventListener('resize', this.windowResize)
+    const totalMinutes = this.endDate.diff(this.startDate, 'minutes').minutes
+
+    this.pixelsPerMinute = (screenWidth - this.aircraftBarWidth) / totalMinutes
+
+    const scheduleDiv = document.getElementById('schedule')
+
+    if (scheduleDiv != null) {
+      scheduleDiv.innerHTML = ''
+      this.mouseoverCanvas.setAttribute('id', 'mouseoverCanvas')
+      this.mouseoverCanvas.setAttribute('class', 'mouseoverCanvas')
+      this.mouseoverCanvas.height = screenHeight
+      this.mouseoverCanvas.width = screenWidth
+
+      this.backgroundCanvas.setAttribute('id', 'backgroundCanvas')
+      this.backgroundCanvas.height = screenHeight
+      this.backgroundCanvas.width = screenWidth
+
+      this.backgroundCanvas.addEventListener('mousemove', this.EventMouseMove, false)
+      this.backgroundCanvas.addEventListener('click', this.EventMouseClick, false)
+
+      scheduleDiv.appendChild(this.backgroundCanvas)
+      scheduleDiv.appendChild(this.mouseoverCanvas)
+    }
+  }
+
+  private DrawGrid () {
+    // console.log('Drawing grid for ' + this.GetAllDays(this.startDate, this.endDate))
+    this.DrawDays()
+    // this.DrawHours()
+    this.DrawCurrentTimeline()
+  }
+
+  private windowResize () {
+    this.DrawCanvas()
+    this.DrawGrid()
+    this.DisplayAircraft()
+    this.DisplayFlights()
+  }
+
+  private EventMouseMove (ev :MouseEvent) {
+    const x = ev.offsetX
+    const y = ev.offsetY
+    // console.log('X: ' + x + '-Y:' + y)
+    if (x > this.aircraftBarWidth) {
+      const highlightedFlight = this.flights.filter(function (flight) {
+        return flight.inside(x, y)
+      })
+      if (highlightedFlight.length > 0) {
+        const flight = highlightedFlight[0]
+        // this.flightCardTitle = 'Flight: ' + flight.id.toString() + ' ' + flight.departure_airport.iata + '-' + flight.arrival_airport.iata
+        this.displayMouseOverFlight = true
+        this.DisplayTooltipForFlight(flight, x, y)
+      } else {
+        this.displayMouseOverFlight = false
+        if (this.mouseoverCanvasContext != null) {
+          this.mouseoverCanvasContext.clearRect(0, 0, this.mouseoverCanvas.width, this.mouseoverCanvas.height)
+        }
+      }
+    }
+  }
+
+  private DisplayTooltipForFlight (flight :Flight, x :number, y :number) {
+    const boxWidth = 120
+    const boxHeight = 120
+    let effectiveX = x
+    const dateFormat = 'MM/dd HHmm'
+
+    // draw box
+    if (this.mouseoverCanvasContext != null) {
+      this.mouseoverCanvasContext.clearRect(0, 0, this.mouseoverCanvas.width, this.mouseoverCanvas.height)
+      console.log('Displying tooltip for: ' + flight.asString())
+      this.mouseoverCanvasContext.beginPath()
+      if (x > this.mouseoverCanvas.width - this.aircraftBarWidth - boxWidth) {
+        effectiveX = x - 10 - boxWidth
+        this.mouseoverCanvasContext.rect(effectiveX, y, boxWidth, boxHeight)
+      } else {
+        effectiveX = x + 10
+        this.mouseoverCanvasContext.rect(x + 10, y, boxWidth, boxHeight)
+      }
+      this.mouseoverCanvasContext.fillStyle = 'gainsboro'
+      this.mouseoverCanvasContext.fill()
+      this.mouseoverCanvasContext.stroke()
+      this.mouseoverCanvasContext.fillStyle = 'black'
+      this.mouseoverCanvasContext.fillText(flight.aircraft_registration, effectiveX, y + 10)
+      this.mouseoverCanvasContext.fillText(flight.departure_airport.iata + '-' + flight.arrival_airport.iata,
+        effectiveX,
+        y + 20)
+      this.mouseoverCanvasContext.fillText('ETD:' + flight.estimated_time_departure.toFormat(dateFormat),
+        effectiveX,
+        y + 30)
+      this.mouseoverCanvasContext.fillText('ETA:' + flight.estimated_time_arrival.toFormat(dateFormat),
+        effectiveX,
+        y + 40)
+      this.mouseoverCanvasContext.fillText('Status:' + flight.status(), effectiveX, y + 50)
+      this.mouseoverCanvasContext.fillText('Percent Complete:' + flight.percentComplete(), effectiveX, y + 60)
+      let crewmemberIndex = 70
+      flight.crewmembers.forEach(crewmember => {
+        if (this.mouseoverCanvasContext != null) {
+          this.mouseoverCanvasContext.fillText('Crew: ' + crewmember.first_name + ' ' + crewmember.last_name, effectiveX, y + crewmemberIndex)
+          crewmemberIndex += 10
+        }
+      })
+      this.mouseoverCanvasContext.closePath()
+    }
+  }
+
+  private EventMouseClick (ev :MouseEvent) {
+    const x = ev.offsetX
+    const y = ev.offsetY
+    console.log('Clicked @ X: ' + x + '-Y:' + y)
+  }
+
+  private GetAllDays (startDate :luxon.DateTime, endDate :luxon.DateTime) {
+    const allDays = []
+    console.log('Getting days between ' + startDate.toISODate() + ' and ' + endDate.toISODate())
+    const duration = endDate.diff(startDate, 'days')
+
+    for (let i = 0; i < duration.days + 1; i++) {
+      allDays.push(startDate.plus({ days: i }).toISODate())
+      console.log('DAY: ', startDate.plus({ days: i }).toISODate())
+    }
+    return allDays
+  }
+
+  private DrawDays () {
+    var days = this.GetAllDays(this.startDate, this.endDate)
+    for (var i = 0; i < days.length; i++) {
+      var displayDate = this.startDate.plus({ days: i }).toFormat('MM/dd')
+      var horizontalStartPixel = this.aircraftBarWidth + (i * 24 * 60 * this.pixelsPerMinute)
+      var horizontalEndPixel = this.aircraftBarWidth + ((i + 1) * 24 * 60 * this.pixelsPerMinute)
+      var horizontalMidPixel = ((horizontalEndPixel - horizontalStartPixel) / 2) + horizontalStartPixel
+
+      if (this.backgroundCanvasContext != null) {
+        // framing for aircraft and date bar
+        this.backgroundCanvasContext.beginPath()
+        this.backgroundCanvasContext.moveTo(0, 0)
+        this.backgroundCanvasContext.lineTo(this.backgroundCanvas.width, 0)
+        this.backgroundCanvasContext.moveTo(0, 20)
+        this.backgroundCanvasContext.lineTo(this.backgroundCanvas.width, 20)
+        this.backgroundCanvasContext.strokeStyle = 'grey'
+        this.backgroundCanvasContext.stroke()
+        this.backgroundCanvasContext.closePath()
+
+        // console.log('Drawing day: ' + displayDate)
+        this.backgroundCanvasContext.beginPath()
+        this.backgroundCanvasContext.moveTo(horizontalStartPixel, 0)
+        this.backgroundCanvasContext.lineTo(horizontalStartPixel, this.backgroundCanvas.height)
+        this.backgroundCanvasContext.strokeStyle = 'grey'
+        this.backgroundCanvasContext.stroke()
+        this.backgroundCanvasContext.moveTo(horizontalMidPixel, 0)
+
+        this.backgroundCanvasContext.fillStyle = 'white'
+        this.backgroundCanvasContext.fillText(displayDate, horizontalMidPixel - 20, 12)
+        this.backgroundCanvasContext.moveTo(horizontalEndPixel, 0)
+        this.backgroundCanvasContext.lineTo(horizontalEndPixel, this.backgroundCanvas.height)
+        this.backgroundCanvasContext.stroke()
+        this.backgroundCanvasContext.closePath()
+      }
+    }
+  }
+
+  private DrawHours () {
+    var hours = this.endDate.diff(this.startDate, 'hours').hours
+    for (var i = 0; i < hours; i++) {
+      if (i > 0 && i % 24 !== 0 && i % 2 === 0) {
+        var horizontalStartPixel = this.aircraftBarWidth + (i * 60 * this.pixelsPerMinute)
+        if (this.backgroundCanvasContext != null) {
+          const thisHour = i % 24
+          this.backgroundCanvasContext.beginPath()
+          this.backgroundCanvasContext.moveTo(horizontalStartPixel, 10)
+          this.backgroundCanvasContext.lineTo(horizontalStartPixel, this.backgroundCanvas.height)
+          this.backgroundCanvasContext.strokeStyle = 'grey'
+          this.backgroundCanvasContext.stroke()
+          this.backgroundCanvasContext.fillText(thisHour.toString(), horizontalStartPixel, 20)
+          this.backgroundCanvasContext.closePath()
+        }
+      }
+    }
+  }
+
+  private DrawCurrentTimeline () {
+    if (luxon.DateTime.local().toUTC() < this.endDate) {
+      const currentTime = luxon.DateTime.local().toUTC()
+      var minutesDifference = currentTime.diff(this.startDate, 'minutes').minutes
+      var horizontalPixel = (minutesDifference * this.pixelsPerMinute) + this.aircraftBarWidth
+      if (this.backgroundCanvasContext != null) {
+        this.backgroundCanvasContext.beginPath()
+        this.backgroundCanvasContext.moveTo(horizontalPixel, 0)
+        this.backgroundCanvasContext.lineTo(horizontalPixel, this.backgroundCanvas.height)
+        this.backgroundCanvasContext.strokeStyle = 'red'
+        this.backgroundCanvasContext.fillStyle = 'red'
+        this.backgroundCanvasContext.fillText(currentTime.toFormat('HHmm'), horizontalPixel + 2, 12)
+        this.backgroundCanvasContext.stroke()
+        this.backgroundCanvasContext.closePath()
+        this.backgroundCanvasContext.strokeStyle = 'black'
+        this.backgroundCanvasContext.fillStyle = 'black'
+      }
+    }
   }
 
   private DisplayAircraft () {
@@ -176,205 +400,6 @@ export default class Schedule extends Vue {
     }
 
     return color
-  }
-
-  private DisplayFlights () {
-    console.log('Displaying Flights')
-  }
-
-  private DrawCanvas () {
-    let screenWidth = 1024
-    let screenHeight = 768
-
-    screenWidth = window.innerWidth
-    screenHeight = window.innerHeight - this.topOffset
-
-    window.addEventListener('resize', this.windowResize)
-    const totalMinutes = this.endDate.diff(this.startDate, 'minutes').minutes
-
-    this.pixelsPerMinute = (screenWidth - this.aircraftBarWidth) / totalMinutes
-
-    const scheduleDiv = document.getElementById('schedule')
-
-    if (scheduleDiv != null) {
-      scheduleDiv.innerHTML = ''
-      this.mouseoverCanvas.setAttribute('id', 'mouseoverCanvas')
-      this.mouseoverCanvas.setAttribute('class', 'mouseoverCanvas')
-      this.mouseoverCanvas.height = screenHeight
-      this.mouseoverCanvas.width = screenWidth
-
-      this.backgroundCanvas.setAttribute('id', 'backgroundCanvas')
-      this.backgroundCanvas.height = screenHeight
-      this.backgroundCanvas.width = screenWidth
-
-      this.backgroundCanvas.addEventListener('mousemove', this.EventMouseMove, false)
-      this.backgroundCanvas.addEventListener('click', this.EventMouseClick, false)
-
-      scheduleDiv.appendChild(this.backgroundCanvas)
-      scheduleDiv.appendChild(this.mouseoverCanvas)
-    }
-  }
-
-  private DrawGrid () {
-    // console.log('Drawing grid for ' + this.GetAllDays(this.startDate, this.endDate))
-    this.DrawDays()
-    // this.DrawHours()
-    this.DrawCurrentTimeline()
-  }
-
-  private windowResize () {
-    this.DrawCanvas()
-    this.DrawGrid()
-    this.DisplayAircraft()
-    this.DisplayFlights()
-  }
-
-  private EventMouseMove (ev :MouseEvent) {
-    const x = ev.offsetX
-    const y = ev.offsetY
-    // console.log('X: ' + x + '-Y:' + y)
-    if (x > this.aircraftBarWidth) {
-      const highlightedFlight = this.flights.filter(function (flight) {
-        return flight.inside(x, y)
-      })
-      if (highlightedFlight.length > 0) {
-        const flight = highlightedFlight[0]
-        this.DisplayTooltipForFlight(flight, x, y)
-      } else {
-        if (this.mouseoverCanvasContext != null) {
-          this.mouseoverCanvasContext.clearRect(0, 0, this.mouseoverCanvas.width, this.mouseoverCanvas.height)
-        }
-      }
-    }
-  }
-
-  private DisplayTooltipForFlight (flight :Flight, x :number, y :number) {
-    const boxWidth = 120
-    const boxHeight = 120
-    let effectiveX = x
-    const dateFormat = 'MM/dd HHmm'
-
-    // draw box
-    if (this.mouseoverCanvasContext != null) {
-      this.mouseoverCanvasContext.clearRect(0, 0, this.mouseoverCanvas.width, this.mouseoverCanvas.height)
-      console.log('Displying tooltip for: ' + flight.asString())
-      this.mouseoverCanvasContext.beginPath()
-      if (x > this.mouseoverCanvas.width - this.aircraftBarWidth - boxWidth) {
-        effectiveX = x - 10 - boxWidth
-        this.mouseoverCanvasContext.rect(effectiveX, y, boxWidth, boxHeight)
-      } else {
-        effectiveX = x + 10
-        this.mouseoverCanvasContext.rect(x + 10, y, boxWidth, boxHeight)
-      }
-      this.mouseoverCanvasContext.fillStyle = 'gainsboro'
-      this.mouseoverCanvasContext.fill()
-      this.mouseoverCanvasContext.stroke()
-      this.mouseoverCanvasContext.fillStyle = 'black'
-      this.mouseoverCanvasContext.fillText(flight.aircraft_registration, effectiveX, y + 10)
-      this.mouseoverCanvasContext.fillText(flight.departure_airport.iata + '-' + flight.arrival_airport.iata,
-        effectiveX,
-        y + 20)
-      this.mouseoverCanvasContext.fillText('ETD:' + flight.estimated_time_departure.toFormat(dateFormat),
-        effectiveX,
-        y + 30)
-      this.mouseoverCanvasContext.fillText('ETA:' + flight.estimated_time_arrival.toFormat(dateFormat),
-        effectiveX,
-        y + 40)
-      this.mouseoverCanvasContext.fillText('Status:' + flight.status(), effectiveX, y + 50)
-      this.mouseoverCanvasContext.fillText('Percent Complete:' + flight.percentComplete(), effectiveX, y + 60)
-      let crewmemberIndex = 70
-      flight.crewmembers.forEach(crewmember => {
-        if (this.mouseoverCanvasContext != null) {
-          this.mouseoverCanvasContext.fillText('Crew: ' + crewmember.first_name + ' ' + crewmember.last_name, effectiveX, y + crewmemberIndex)
-          crewmemberIndex += 10
-        }
-      })
-      this.mouseoverCanvasContext.closePath()
-    }
-  }
-
-  private EventMouseClick (ev :MouseEvent) {
-    const x = ev.offsetX
-    const y = ev.offsetY
-    console.log('Clicked @ X: ' + x + '-Y:' + y)
-  }
-
-  private GetAllDays (startDate :luxon.DateTime, endDate :luxon.DateTime) {
-    const allDays = []
-    console.log('Getting days between ' + startDate.toISODate() + ' and ' + endDate.toISODate())
-    const duration = endDate.diff(startDate, 'days')
-
-    for (let i = 0; i < duration.days + 1; i++) {
-      allDays.push(startDate.plus({ days: i }).toISODate())
-      console.log('DAY: ', startDate.plus({ days: i }).toISODate())
-    }
-    return allDays
-  }
-
-  private DrawDays () {
-    var days = this.GetAllDays(this.startDate, this.endDate)
-    for (var i = 0; i < days.length; i++) {
-      var displayDate = this.startDate.plus({ days: i }).toFormat('MM/dd')
-      var horizontalStartPixel = this.aircraftBarWidth + (i * 24 * 60 * this.pixelsPerMinute)
-      var horizontalEndPixel = this.aircraftBarWidth + ((i + 1) * 24 * 60 * this.pixelsPerMinute)
-      var horizontalMidPixel = ((horizontalEndPixel - horizontalStartPixel) / 2) + horizontalStartPixel
-
-      if (this.backgroundCanvasContext != null) {
-        // console.log('Drawing day: ' + displayDate)
-        this.backgroundCanvasContext.beginPath()
-        this.backgroundCanvasContext.moveTo(horizontalStartPixel, 0)
-        this.backgroundCanvasContext.lineTo(horizontalStartPixel, this.backgroundCanvas.height)
-        this.backgroundCanvasContext.strokeStyle = 'grey'
-        this.backgroundCanvasContext.stroke()
-        this.backgroundCanvasContext.moveTo(horizontalMidPixel, 0)
-
-        this.backgroundCanvasContext.fillStyle = 'white'
-        this.backgroundCanvasContext.fillText(displayDate, horizontalMidPixel - 20, 10)
-        this.backgroundCanvasContext.moveTo(horizontalEndPixel, 0)
-        this.backgroundCanvasContext.lineTo(horizontalEndPixel, this.backgroundCanvas.height)
-        this.backgroundCanvasContext.stroke()
-        this.backgroundCanvasContext.closePath()
-      }
-    }
-  }
-
-  private DrawHours () {
-    var hours = this.endDate.diff(this.startDate, 'hours').hours
-    for (var i = 0; i < hours; i++) {
-      if (i > 0 && i % 24 !== 0 && i % 2 === 0) {
-        var horizontalStartPixel = this.aircraftBarWidth + (i * 60 * this.pixelsPerMinute)
-        if (this.backgroundCanvasContext != null) {
-          const thisHour = i % 24
-          this.backgroundCanvasContext.beginPath()
-          this.backgroundCanvasContext.moveTo(horizontalStartPixel, 10)
-          this.backgroundCanvasContext.lineTo(horizontalStartPixel, this.backgroundCanvas.height)
-          this.backgroundCanvasContext.strokeStyle = 'grey'
-          this.backgroundCanvasContext.stroke()
-          this.backgroundCanvasContext.fillText(thisHour.toString(), horizontalStartPixel, 20)
-          this.backgroundCanvasContext.closePath()
-        }
-      }
-    }
-  }
-
-  private DrawCurrentTimeline () {
-    if (luxon.DateTime.local().toUTC() < this.endDate) {
-      const currentTime = luxon.DateTime.local().toUTC()
-      var minutesDifference = currentTime.diff(this.startDate, 'minutes').minutes
-      var horizontalPixel = (minutesDifference * this.pixelsPerMinute) + this.aircraftBarWidth
-      if (this.backgroundCanvasContext != null) {
-        this.backgroundCanvasContext.beginPath()
-        this.backgroundCanvasContext.moveTo(horizontalPixel, 0)
-        this.backgroundCanvasContext.lineTo(horizontalPixel, this.backgroundCanvas.height)
-        this.backgroundCanvasContext.strokeStyle = 'red'
-        this.backgroundCanvasContext.fillStyle = 'red'
-        this.backgroundCanvasContext.fillText(currentTime.toFormat('HHmm'), horizontalPixel + 2, 12)
-        this.backgroundCanvasContext.stroke()
-        this.backgroundCanvasContext.closePath()
-        this.backgroundCanvasContext.strokeStyle = 'black'
-        this.backgroundCanvasContext.fillStyle = 'black'
-      }
-    }
   }
 }
 
