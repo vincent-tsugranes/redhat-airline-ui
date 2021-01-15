@@ -1,34 +1,41 @@
 <template>
-    <l-map
-      ref="myMap"
-      style="height: 100%"
-      :zoom="this.zoom"
-    >
-      <l-tile-layer :url="this.url"></l-tile-layer>
+  <div>
+      <div id="map"></div>
 
-        <l-marker
-          v-for="marker in this.markers"
-          :key="marker.id"
-          :lat-lng="marker.position"
-          :icon="marker.icon"
-          :icon-size="marker.iconSize"
-          :icon-anchor="marker.iconAnchor"
-          :rotationAngle="marker.rotationAngle"
+<!--
+      <l-map
+        ref="myMap"
+        style="height: 100%"
+        :zoom="this.zoom"
+      >
+        <l-tile-layer ref="mapLayer" :url="this.url"></l-tile-layer>
+          <l-layer-group ref="mapFeatures">
+            <l-marker
+              v-for="marker in this.markers"
+              :key="marker.id"
+              :lat-lng="marker.position"
+              :icon="marker.icon"
+              :icon-size="marker.iconSize"
+              :icon-anchor="marker.iconAnchor"
+              :rotationAngle="marker.rotationAngle"
 
-        >
-          <l-tooltip :content="marker.tooltip" />
-      </l-marker>
+            >
+              <l-tooltip :content="marker.tooltip" />
+          </l-marker>
 
-        <l-polyline
-          v-for="line in this.lines"
-          :key="line.id"
-          :lat-lngs="line.latlngs"
-          :color="line.color"
-          :weight="line.weight"
-        >
-          <l-tooltip :content="line.tooltip" />
-      </l-polyline>
-    </l-map>
+            <l-polyline
+              v-for="line in this.lines"
+              :key="line.id"
+              :lat-lngs="line.latlngs"
+              :color="line.color"
+              :weight="line.weight"
+            >
+              <l-tooltip :content="line.tooltip" />
+          </l-polyline>
+        </l-layer-group>
+      </l-map>
+        -->
+    </div>
 </template>
 
 <script lang="ts">
@@ -42,15 +49,16 @@ import { Airport } from '../entity/airport'
 import * as luxon from 'luxon'
 import { LMap, LTileLayer, LMarker, LTooltip, LPolyline } from 'vue2-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Icon } from 'leaflet'
+import * as L from 'leaflet'
+import { GeodesicLine } from 'leaflet.geodesic'
 import LatLon from 'geodesy/latlon-nvector-spherical'
 import { splitLineString, bearing } from '../entity/utilities/antimeridian'
-type D = Icon.Default & {
+type D = L.Icon.Default & {
   _getIconUrl?: string;
 };
 
-delete (Icon.Default.prototype as D)._getIconUrl
-Icon.Default.mergeOptions({
+delete (L.Icon.Default.prototype as D)._getIconUrl
+L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
@@ -74,6 +82,9 @@ export default class LiveMap extends Vue {
   flights: Array<Flight> = []
   startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
   endDate = this.startDate.plus({ days: 2 })
+  $refs!: {
+    mapLayers: LTileLayer
+  }
 
   mounted () {
     this.GetFlights()
@@ -92,8 +103,8 @@ export default class LiveMap extends Vue {
   }
 
   private displayFlights () {
-    const map = this.$refs.myMap
-    console.log('Map Object', map)
+    // const map = this.$refs.myMap
+    // console.log('Map Object', map)
     this.flights.forEach(flight => {
       console.log('drawing flight ' + flight.asString())
       this.addMarkerForAirport(flight.departure_airport)
@@ -102,6 +113,106 @@ export default class LiveMap extends Vue {
       const startCoordinates = new LatLon(flight.departure_airport.latitude, flight.departure_airport.longitude)
       const endCoordinates = new LatLon(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
 
+      const flightCompleteLine = {
+        id: flight.id + '-start',
+        tooltip: flight.asString(),
+        color: 'blue',
+        weight: 2,
+        latlngs: [
+          [flight.departure_airport.latitude, flight.departure_airport.longitude]
+        ]
+      }
+      const completePoints :Array<LatLon> = []
+      completePoints.push(new LatLon(flight.departure_airport.latitude, flight.departure_airport.longitude))
+
+      const flightPercentComplete = flight.percentComplete() / 100
+      const currentAircraftCoordinates = startCoordinates.intermediatePointTo(endCoordinates, flightPercentComplete)
+
+      const iterations = 50
+      for (var i = 0; i < iterations; i++) {
+        const fraction = (i * (100 / iterations)) / 100
+        const point = startCoordinates.intermediatePointTo(currentAircraftCoordinates, fraction)
+        completePoints.push(new LatLon(point.latitude, point.longitude))
+      }
+
+      completePoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
+
+      const splitCompletePoints :Array<LatLon> = splitLineString(completePoints)
+      splitCompletePoints.forEach(point => {
+        flightCompleteLine.latlngs.push([point.latitude, point.longitude])
+      })
+      this.lines.push(flightCompleteLine)
+
+      const flightIcon = new L.Icon({
+        iconUrl: require('../../public/img/airplaneIcon.svg'),
+        iconSize: [80, 80],
+        iconAnchor: [0, 10]
+      })
+      const flightMarker = {
+        id: flight.id,
+        position: {
+          lat: currentAircraftCoordinates.latitude,
+          lng: currentAircraftCoordinates.longitude
+        },
+        tooltip: flight.asString(),
+        icon: flightIcon,
+        rotationAngle: bearing(flight.departure_airport.latitude, flight.departure_airport.longitude, flight.arrival_airport.latitude, flight.arrival_airport.longitude)
+      }
+      console.log('Flight: ' + flight.id.toString() + ' bearing: ' + flightMarker.rotationAngle)
+      this.markers.push(flightMarker)
+
+      const flightRemainingLine = {
+        id: flight.id + '-end',
+        tooltip: flight.asString(),
+        color: 'grey',
+        weight: 1,
+        latlngs: [
+          [currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude]
+        ]
+      }
+      const remainingPoints :Array<LatLon> = []
+      remainingPoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
+
+      for (var j = 0; j < iterations; j++) {
+        const fraction = (j * (100 / iterations)) / 100
+        const point = currentAircraftCoordinates.intermediatePointTo(endCoordinates, fraction)
+        remainingPoints.push(new LatLon(point.latitude, point.longitude))
+      }
+      remainingPoints.push(new LatLon(endCoordinates.latitude, endCoordinates.longitude))
+
+      const splitRemainingPoints :Array<LatLon> = splitLineString(remainingPoints)
+      splitRemainingPoints.forEach(point => {
+        flightRemainingLine.latlngs.push([point.latitude, point.longitude])
+      })
+      this.lines.push(flightRemainingLine)
+    })
+  }
+
+  private displayFlightsGeo () {
+    const map = new L.Map('map').setView([0, 0], 2)
+
+    L.tileLayer('https://blog.cyclemap.link/Leaflet.Geodesic/basic-interactive.html', {
+      maxZoom: 15,
+      noWrap: true
+    }).addTo(map)
+
+    // const mapFeatures = this.$refs.mapFeatures
+    this.flights.forEach(flight => {
+      console.log('drawing flight ' + flight.asString())
+      this.addMarkerForAirport(flight.departure_airport)
+      this.addMarkerForAirport(flight.arrival_airport)
+
+      const startCoordinates = new L.LatLng(flight.departure_airport.latitude, flight.departure_airport.longitude)
+      const endCoordinates = new L.LatLng(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
+
+      const options = {
+        weight: 20,
+        opacity: 0.5,
+        color: 'red'
+      }
+      // eslint-disable-next-line no-unused-vars
+      const geodesicLine = new GeodesicLine([startCoordinates, endCoordinates], options).addTo(map)
+    /*
       const flightCompleteLine = {
         id: flight.id + '-start',
         tooltip: flight.asString(),
@@ -173,6 +284,7 @@ export default class LiveMap extends Vue {
         flightRemainingLine.latlngs.push([point.latitude, point.longitude])
       })
       this.lines.push(flightRemainingLine)
+    */
     })
   }
 
