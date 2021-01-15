@@ -11,6 +11,10 @@
           :key="marker.id"
           :lat-lng="marker.position"
           :icon="marker.icon"
+          :icon-size="marker.iconSize"
+          :icon-anchor="marker.iconAnchor"
+          :rotationAngle="marker.rotationAngle"
+
         >
           <l-tooltip :content="marker.tooltip" />
       </l-marker>
@@ -20,6 +24,7 @@
           :key="line.id"
           :lat-lngs="line.latlngs"
           :color="line.color"
+          :weight="line.weight"
         >
           <l-tooltip :content="line.tooltip" />
       </l-polyline>
@@ -37,9 +42,9 @@ import { Airport } from '../entity/airport'
 import * as luxon from 'luxon'
 import { LMap, LTileLayer, LMarker, LTooltip, LPolyline } from 'vue2-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Icon, Point } from 'leaflet'
+import { Icon } from 'leaflet'
 import LatLon from 'geodesy/latlon-nvector-spherical'
-import { splitLineString } from '../entity/utilities/antimeridian'
+import { splitLineString, bearing } from '../entity/utilities/antimeridian'
 type D = Icon.Default & {
   _getIconUrl?: string;
 };
@@ -101,6 +106,7 @@ export default class LiveMap extends Vue {
         id: flight.id + '-start',
         tooltip: flight.asString(),
         color: 'blue',
+        weight: 2,
         latlngs: [
           [flight.departure_airport.latitude, flight.departure_airport.longitude]
         ]
@@ -125,10 +131,10 @@ export default class LiveMap extends Vue {
         flightCompleteLine.latlngs.push([point.latitude, point.longitude])
       })
       this.lines.push(flightCompleteLine)
-
       const flightIcon = new Icon({
-        iconUrl: require('../assets/airplaneIcon.svg'),
-        iconSize: new Point(32, 32)
+        iconUrl: require('../../public/img/airplaneIcon.svg'),
+        iconSize: [80, 80],
+        iconAnchor: [0, 10]
       })
       const flightMarker = {
         id: flight.id,
@@ -137,22 +143,17 @@ export default class LiveMap extends Vue {
           lng: currentAircraftCoordinates.longitude
         },
         tooltip: flight.asString(),
-        icon: flightIcon
-        /*
-        icon: {
-          iconUrl: '/public/img/icons/airplaneIcon.svg',
-          iconSize: [32, 37],
-          iconAnchor: [16, 37]
-        }
-        */
-        // icon: airplaneIcon
+        icon: flightIcon,
+        rotationAngle: bearing(flight.departure_airport.latitude, flight.departure_airport.longitude, flight.arrival_airport.latitude, flight.arrival_airport.longitude)
       }
+      console.log('Flight: ' + flight.id.toString() + ' bearing: ' + flightMarker.rotationAngle)
       this.markers.push(flightMarker)
 
       const flightRemainingLine = {
         id: flight.id + '-end',
         tooltip: flight.asString(),
         color: 'grey',
+        weight: 1,
         latlngs: [
           [currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude]
         ]

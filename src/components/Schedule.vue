@@ -1,11 +1,13 @@
 <template>
       <div>
-        <div id="schedule" class="row" refs='schedule' style="padding-top: 20px">
+        <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px">
         </div>
+        <!--
         <v-card v-if="displayMouseOverFlight" absolute left centered shaped style="z-index: 1000" elevation="2" outlined>
             <v-card-title>Flight Title</v-card-title>
             <v-card-text>Flight Details Here</v-card-text>
         </v-card>
+        -->
       </div>
 </template>
 
@@ -33,12 +35,13 @@ export default class Schedule extends Vue {
   aircraftLineHeightMin = 50
   aircraftLineHeightMax = 100
   flightPuckHeight = 25
+  headerOffset = 20
   displayMouseOverFlight = false
-  mouseOverFlight: Flight = null
+  // mouseOverFlight: Flight = null
 
   data () {
     return {
-      mouseOverFlight: this.mouseOverFlight
+      // mouseOverFlight: this.mouseOverFlight
     }
   }
 
@@ -287,7 +290,9 @@ export default class Schedule extends Vue {
 
   private DisplayAircraft () {
     console.log('Displaying Aircraft')
-    let heightPerSection = (this.backgroundCanvas.height - 10) / this.aircraft.length
+
+    // how much space we leave for the day bar at the top
+    let heightPerSection = (this.backgroundCanvas.height - this.headerOffset) / this.aircraft.length
     if (heightPerSection < this.aircraftLineHeightMin) {
       heightPerSection = this.aircraftLineHeightMin
     }
@@ -295,26 +300,32 @@ export default class Schedule extends Vue {
       heightPerSection = this.aircraftLineHeightMax
     }
 
-    let aircraftOffset = 0
+    let aircraftIndex = 0
     this.aircraft.forEach(ac => {
-      aircraftOffset += 1
+      aircraftIndex += 1
       if (this.backgroundCanvasContext != null) {
         this.backgroundCanvasContext.beginPath()
         this.backgroundCanvasContext.lineWidth = 1
-        this.backgroundCanvasContext.fillStyle = 'black'
-        this.backgroundCanvasContext.rect(0, (aircraftOffset - 1) * heightPerSection, this.aircraftBarWidth, heightPerSection)
-        this.backgroundCanvasContext.fill()
 
-        this.backgroundCanvasContext.moveTo(0, aircraftOffset * heightPerSection)
-        this.backgroundCanvasContext.lineTo(this.aircraftBarWidth, aircraftOffset * heightPerSection)
+        // you could fill the aircraft box color here
+        // this.backgroundCanvasContext.fillStyle = 'black'
+        // this.backgroundCanvasContext.rect(0, aircraftOffset + ((aircraftIndex - 1) * heightPerSection), this.aircraftBarWidth, heightPerSection)
+        // this.backgroundCanvasContext.fill()
+
+        // aircraft separator
+        this.backgroundCanvasContext.moveTo(0, aircraftIndex * heightPerSection + this.headerOffset)
+        // this.backgroundCanvasContext.lineTo(this.aircraftBarWidth, aircraftIndex * heightPerSection + this.headerOffset)
         this.backgroundCanvasContext.strokeStyle = 'grey'
 
+        // aircraft text
         this.backgroundCanvasContext.stroke()
         this.backgroundCanvasContext.fillStyle = 'white'
-        this.backgroundCanvasContext.fillText(ac.toString(), 20, (aircraftOffset * heightPerSection) - ((1 / 2) * heightPerSection) + 8)
+        this.backgroundCanvasContext.fillText(ac.toString(), 20, (aircraftIndex * heightPerSection) - ((1 / 2) * heightPerSection) + this.headerOffset + 6)
+
+        // line from aircraft sidebar through days
         this.backgroundCanvasContext.beginPath()
-        this.backgroundCanvasContext.moveTo(this.aircraftBarWidth, aircraftOffset * heightPerSection)
-        this.backgroundCanvasContext.lineTo(this.backgroundCanvas.width, aircraftOffset * heightPerSection)
+        this.backgroundCanvasContext.moveTo(0, aircraftIndex * heightPerSection + this.headerOffset)
+        this.backgroundCanvasContext.lineTo(this.backgroundCanvas.width, aircraftIndex * heightPerSection + this.headerOffset)
         this.backgroundCanvasContext.strokeStyle = 'grey'
         this.backgroundCanvasContext.stroke()
 
@@ -332,7 +343,7 @@ export default class Schedule extends Vue {
 
           let startXPixel = minutesFromStart * this.pixelsPerMinute + this.aircraftBarWidth
           let endXPixel = minutesDuration * this.pixelsPerMinute
-          const bottomYValue = ((aircraftOffset * heightPerSection) - ((1 / 2) * heightPerSection) + ((1 / 2) * this.flightPuckHeight))
+          const bottomYValue = ((aircraftIndex * heightPerSection) - ((1 / 2) * heightPerSection) + ((1 / 2) * this.flightPuckHeight)) + this.headerOffset
 
           // if the flight didn't start in the current timeframe, it's duration is not all in the current timeframe
           if (startXPixel < 0) {
