@@ -73,7 +73,7 @@ export default class LiveMap extends Vue {
         weight: 2,
         opacity: 0.5,
         color: 'grey',
-        steps: 20
+        steps: 10
       }
 
       new GeodesicLine([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(map)
@@ -82,7 +82,7 @@ export default class LiveMap extends Vue {
         weight: 3,
         opacity: 0.5,
         color: 'blue',
-        steps: 20
+        steps: 10
       }
       new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(map)
 
