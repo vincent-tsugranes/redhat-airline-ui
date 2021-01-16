@@ -91,7 +91,7 @@ export default class LiveMap extends Vue {
         iconSize: [50, 50],
         iconAnchor: [25, 25]
       })
-      const flightBearing = this.GetBearing(startCoordinates.wrap(), endCoordinates.wrap())
+      const flightBearing = this.GetBearing(currentAircraftCoordinates, endCoordinates)
       new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing }).addTo(map)
     })
   }
