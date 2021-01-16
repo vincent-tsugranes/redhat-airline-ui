@@ -1,9 +1,6 @@
 <template>
-<v-app>
-  <div id="app">
-      <Sidebar />
-    <router-view/>
-  </div>
+  <v-app>
+    <Sidebar />
   </v-app>
 </template>
 

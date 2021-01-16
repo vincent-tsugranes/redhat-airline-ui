@@ -202,7 +202,7 @@ export default class Schedule extends Vue {
 
   private GetAllDays (startDate :luxon.DateTime, endDate :luxon.DateTime) {
     const allDays = []
-    console.log('Getting days between ' + startDate.toISODate() + ' and ' + endDate.toISODate())
+    // console.log('Getting days between ' + startDate.toISODate() + ' and ' + endDate.toISODate())
     const duration = endDate.diff(startDate, 'days')
 
     for (let i = 0; i < duration.days + 1; i++) {
@@ -388,12 +388,15 @@ export default class Schedule extends Vue {
             }
             const flightText = flight.departure_airport.iata + '-' + flight.arrival_airport.iata
             this.backgroundCanvasContext.fillText(flightText, x + 2, y + (this.flightPuckHeight / 2) + 2)
+
+            /*
             const flightString = ' : '.concat(
               flight.id.toString(),
               flight.departure_airport.iata, '-', flight.arrival_airport.iata,
               ' from ', flight.estimated_time_departure.toISO(), ' to ', flight.estimated_time_arrival.toISO())
 
             console.log('Flight: ' + flightText + ' minutesFromStart=' + minutesFromStart + flightString)
+            */
           }
         })
       }

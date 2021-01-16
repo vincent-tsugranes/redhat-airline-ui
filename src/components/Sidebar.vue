@@ -1,73 +1,79 @@
 <template>
-  <nav>
-          <v-app-bar
-          color="deep-purple accent-4"
-          dark
-        >
-        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-        </v-app-bar>
-
-    <v-navigation-drawer v-model="drawer" absolute temporary app style="z-index: 1000">
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title class="title">
-                Red Hat Airline
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                subtext
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider></v-divider>
-              <v-list-item class="px-2">
-                  <v-list-item-avatar>
-                      <v-icon>mdi-account-outline</v-icon>
-                  </v-list-item-avatar>
-                  <v-list-item-content class="text-truncate">
-                      Vince
-                  </v-list-item-content>
-                  <v-btn icon small>
-                      <v-icon>mdi-chevron-left</v-icon>
-                  </v-btn>
-              </v-list-item>
-              <v-divider></v-divider>
-          <v-list
-            dense
-            nav
-          >
-            <v-list-item
-              v-for="item in items"
-              :key="item.title"
-              router :to="item.route"
-            >
-              <v-list-item-icon>
-                <v-icon>{{ item.icon }}</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-    </v-navigation-drawer>
-  </nav>
+  <div id="sidebar">
+    <div id="view" :class="[{'collapsed' : collapsed}]">
+      <router-view/>
+    </div>
+    <sidebar-menu
+      class='sidebar'
+      :menu="menu"
+      :collapsed='collapsed'
+      @item-click='onItemClick'
+      @collapse='onCollapse'
+    />
+  </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
-
-@Component
-export default class Sidebar extends Vue {
+<script>
+export default {
   data () {
     return {
-      drawer: false,
-      items: [
-        { title: 'Schedule', icon: 'mdi-view-dashboard', route: '/' },
-        { title: 'Map', icon: 'mdi-view-dashboard', route: '/map' },
-        { title: 'Flights', icon: 'mdi-view-dashboard', route: '/flights' },
-        { title: 'Aircraft', icon: 'mdi-image', route: '/aircraft' },
-        { title: 'Airports', icon: 'mdi-help-box', route: '/airports' }
-      ]
+      menu: [
+        {
+          header: true,
+          title: 'Red Hat Airline',
+          hiddenOnCollapse: true
+        },
+        {
+          href: '/',
+          title: 'Schedule',
+          icon: 'fa fa-list-alt'
+        },
+        {
+          href: '/map',
+          title: 'Map',
+          icon: 'fa fa-globe'
+        }
+      ],
+      collapsed: true
+    }
+  },
+  methods: {
+    onItemClick (e, i) {
+      console.log('onItemClick')
+    },
+    onCollapse (c) {
+      console.log('onCollapse')
+      this.collapsed = c
     }
   }
 }
 </script>
+
+<style>
+#view {
+  padding-left: 200px;
+}
+#view.collapsed {
+  padding-left: 50px;
+}
+
+.sidebar.v-sidebar-menu {
+  width: 200px;
+}
+
+.sidebar.v-sidebar-menu .vsm--mobile-item {
+  z-index: 0 !important;
+}
+.sidebar.v-sidebar-menu.vsm_collapsed .vsm--link_level-1:hover {
+  background-color: transparent;
+}
+
+.sidebar.v-sidebar-menu .vsm-arrow:after {
+  content: "\f105";
+  font-family: "FontAwesome";
+}
+.sidebar.v-sidebar-menu .collapse-btn:after {
+  content: "\f07e";
+  font-family: "FontAwesome";
+}
+</style>

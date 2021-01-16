@@ -1,58 +1,23 @@
 <template>
-  <div>
-      <div id="map"></div>
-
-<!--
-      <l-map
-        ref="myMap"
-        style="height: 100%"
-        :zoom="this.zoom"
-      >
-        <l-tile-layer ref="mapLayer" :url="this.url"></l-tile-layer>
-          <l-layer-group ref="mapFeatures">
-            <l-marker
-              v-for="marker in this.markers"
-              :key="marker.id"
-              :lat-lng="marker.position"
-              :icon="marker.icon"
-              :icon-size="marker.iconSize"
-              :icon-anchor="marker.iconAnchor"
-              :rotationAngle="marker.rotationAngle"
-
-            >
-              <l-tooltip :content="marker.tooltip" />
-          </l-marker>
-
-            <l-polyline
-              v-for="line in this.lines"
-              :key="line.id"
-              :lat-lngs="line.latlngs"
-              :color="line.color"
-              :weight="line.weight"
-            >
-              <l-tooltip :content="line.tooltip" />
-          </l-polyline>
-        </l-layer-group>
-      </l-map>
-        -->
-    </div>
+  <div id="map"></div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
-import { getFlightSchedule } from '../services/FlightService'
 // eslint-disable-next-line no-unused-vars
 import { Flight } from '../entity/flight'
 
 // eslint-disable-next-line no-unused-vars
 import { Airport } from '../entity/airport'
+
+import { Component, Vue } from 'vue-property-decorator'
+import { getFlightSchedule } from '../services/FlightService'
 import * as luxon from 'luxon'
-import { LMap, LTileLayer, LMarker, LTooltip, LPolyline } from 'vue2-leaflet'
 import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
+import 'leaflet-rotatedmarker'
+
+// eslint-disable-next-line no-unused-vars
 import { GeodesicLine } from 'leaflet.geodesic'
-import LatLon from 'geodesy/latlon-nvector-spherical'
-import { splitLineString, bearing } from '../entity/utilities/antimeridian'
 type D = L.Icon.Default & {
   _getIconUrl?: string;
 };
@@ -64,27 +29,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
 })
 
-@Component({
-  components: {
-    LMap,
-    LTileLayer,
-    LMarker,
-    LTooltip,
-    LPolyline
-  }
-})
+@Component
 export default class LiveMap extends Vue {
-  zoom: number = 2.3
-  // center: LatLng = latLng(47.41322, -1.219482)
-  url: string = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-  markers: any[] = []
-  lines: any[] = []
   flights: Array<Flight> = []
   startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
   endDate = this.startDate.plus({ days: 2 })
-  $refs!: {
-    mapLayers: LTileLayer
-  }
 
   mounted () {
     this.GetFlights()
@@ -103,208 +52,154 @@ export default class LiveMap extends Vue {
   }
 
   private displayFlights () {
-    // const map = this.$refs.myMap
-    // console.log('Map Object', map)
-    this.flights.forEach(flight => {
-      console.log('drawing flight ' + flight.asString())
-      this.addMarkerForAirport(flight.departure_airport)
-      this.addMarkerForAirport(flight.arrival_airport)
-
-      const startCoordinates = new LatLon(flight.departure_airport.latitude, flight.departure_airport.longitude)
-      const endCoordinates = new LatLon(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
-
-      const flightCompleteLine = {
-        id: flight.id + '-start',
-        tooltip: flight.asString(),
-        color: 'blue',
-        weight: 2,
-        latlngs: [
-          [flight.departure_airport.latitude, flight.departure_airport.longitude]
-        ]
-      }
-      const completePoints :Array<LatLon> = []
-      completePoints.push(new LatLon(flight.departure_airport.latitude, flight.departure_airport.longitude))
-
-      const flightPercentComplete = flight.percentComplete() / 100
-      const currentAircraftCoordinates = startCoordinates.intermediatePointTo(endCoordinates, flightPercentComplete)
-
-      const iterations = 50
-      for (var i = 0; i < iterations; i++) {
-        const fraction = (i * (100 / iterations)) / 100
-        const point = startCoordinates.intermediatePointTo(currentAircraftCoordinates, fraction)
-        completePoints.push(new LatLon(point.latitude, point.longitude))
-      }
-
-      completePoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
-
-      const splitCompletePoints :Array<LatLon> = splitLineString(completePoints)
-      splitCompletePoints.forEach(point => {
-        flightCompleteLine.latlngs.push([point.latitude, point.longitude])
-      })
-      this.lines.push(flightCompleteLine)
-
-      const flightIcon = new L.Icon({
-        iconUrl: require('../../public/img/airplaneIcon.svg'),
-        iconSize: [80, 80],
-        iconAnchor: [0, 10]
-      })
-      const flightMarker = {
-        id: flight.id,
-        position: {
-          lat: currentAircraftCoordinates.latitude,
-          lng: currentAircraftCoordinates.longitude
-        },
-        tooltip: flight.asString(),
-        icon: flightIcon,
-        rotationAngle: bearing(flight.departure_airport.latitude, flight.departure_airport.longitude, flight.arrival_airport.latitude, flight.arrival_airport.longitude)
-      }
-      console.log('Flight: ' + flight.id.toString() + ' bearing: ' + flightMarker.rotationAngle)
-      this.markers.push(flightMarker)
-
-      const flightRemainingLine = {
-        id: flight.id + '-end',
-        tooltip: flight.asString(),
-        color: 'grey',
-        weight: 1,
-        latlngs: [
-          [currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude]
-        ]
-      }
-      const remainingPoints :Array<LatLon> = []
-      remainingPoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
-
-      for (var j = 0; j < iterations; j++) {
-        const fraction = (j * (100 / iterations)) / 100
-        const point = currentAircraftCoordinates.intermediatePointTo(endCoordinates, fraction)
-        remainingPoints.push(new LatLon(point.latitude, point.longitude))
-      }
-      remainingPoints.push(new LatLon(endCoordinates.latitude, endCoordinates.longitude))
-
-      const splitRemainingPoints :Array<LatLon> = splitLineString(remainingPoints)
-      splitRemainingPoints.forEach(point => {
-        flightRemainingLine.latlngs.push([point.latitude, point.longitude])
-      })
-      this.lines.push(flightRemainingLine)
-    })
-  }
-
-  private displayFlightsGeo () {
-    const map = new L.Map('map').setView([0, 0], 2)
-
-    L.tileLayer('https://blog.cyclemap.link/Leaflet.Geodesic/basic-interactive.html', {
+    var map = L.map('map').setView([51.505, -0.09], 3)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 15,
-      noWrap: true
+      noWrap: true,
+      tileSize: 512,
+      zoomOffset: -1,
+      attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
     }).addTo(map)
 
-    // const mapFeatures = this.$refs.mapFeatures
     this.flights.forEach(flight => {
-      console.log('drawing flight ' + flight.asString())
-      this.addMarkerForAirport(flight.departure_airport)
-      this.addMarkerForAirport(flight.arrival_airport)
+      this.getMarkerForAirport(flight.departure_airport).addTo(map)
+      this.getMarkerForAirport(flight.arrival_airport).addTo(map)
 
       const startCoordinates = new L.LatLng(flight.departure_airport.latitude, flight.departure_airport.longitude)
       const endCoordinates = new L.LatLng(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
+      const currentAircraftCoordinates = this.GetIntermediatePoint(startCoordinates, endCoordinates, flight.percentComplete())
 
-      const options = {
-        weight: 20,
-        opacity: 0.5,
-        color: 'red'
-      }
-      // eslint-disable-next-line no-unused-vars
-      const geodesicLine = new GeodesicLine([startCoordinates, endCoordinates], options).addTo(map)
-    /*
-      const flightCompleteLine = {
-        id: flight.id + '-start',
-        tooltip: flight.asString(),
-        color: 'blue',
+      const completeLineOptions = {
         weight: 2,
-        latlngs: [
-          [flight.departure_airport.latitude, flight.departure_airport.longitude]
-        ]
-      }
-      const completePoints :Array<LatLon> = []
-      completePoints.push(new LatLon(flight.departure_airport.latitude, flight.departure_airport.longitude))
-
-      const flightPercentComplete = flight.percentComplete() / 100
-      const currentAircraftCoordinates = startCoordinates.intermediatePointTo(endCoordinates, flightPercentComplete)
-
-      const iterations = 50
-      for (var i = 0; i < iterations; i++) {
-        const fraction = (i * (100 / iterations)) / 100
-        const point = startCoordinates.intermediatePointTo(currentAircraftCoordinates, fraction)
-        completePoints.push(new LatLon(point.latitude, point.longitude))
-      }
-
-      completePoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
-
-      const splitCompletePoints :Array<LatLon> = splitLineString(completePoints)
-      splitCompletePoints.forEach(point => {
-        flightCompleteLine.latlngs.push([point.latitude, point.longitude])
-      })
-      this.lines.push(flightCompleteLine)
-      const flightIcon = new Icon({
-        iconUrl: require('../../public/img/airplaneIcon.svg'),
-        iconSize: [80, 80],
-        iconAnchor: [0, 10]
-      })
-      const flightMarker = {
-        id: flight.id,
-        position: {
-          lat: currentAircraftCoordinates.latitude,
-          lng: currentAircraftCoordinates.longitude
-        },
-        tooltip: flight.asString(),
-        icon: flightIcon,
-        rotationAngle: bearing(flight.departure_airport.latitude, flight.departure_airport.longitude, flight.arrival_airport.latitude, flight.arrival_airport.longitude)
-      }
-      console.log('Flight: ' + flight.id.toString() + ' bearing: ' + flightMarker.rotationAngle)
-      this.markers.push(flightMarker)
-
-      const flightRemainingLine = {
-        id: flight.id + '-end',
-        tooltip: flight.asString(),
+        opacity: 0.5,
         color: 'grey',
-        weight: 1,
-        latlngs: [
-          [currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude]
-        ]
+        steps: 20
       }
-      const remainingPoints :Array<LatLon> = []
-      remainingPoints.push(new LatLon(currentAircraftCoordinates.latitude, currentAircraftCoordinates.longitude))
 
-      for (var j = 0; j < iterations; j++) {
-        const fraction = (j * (100 / iterations)) / 100
-        const point = currentAircraftCoordinates.intermediatePointTo(endCoordinates, fraction)
-        remainingPoints.push(new LatLon(point.latitude, point.longitude))
+      new GeodesicLine([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(map)
+
+      const remainingLineOptions = {
+        weight: 3,
+        opacity: 0.5,
+        color: 'blue',
+        steps: 20
       }
-      remainingPoints.push(new LatLon(endCoordinates.latitude, endCoordinates.longitude))
+      new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(map)
 
-      const splitRemainingPoints :Array<LatLon> = splitLineString(remainingPoints)
-      splitRemainingPoints.forEach(point => {
-        flightRemainingLine.latlngs.push([point.latitude, point.longitude])
+      const flightIcon = new L.Icon({
+        iconUrl: require('../../public/img/airplaneIcon.svg'),
+        iconSize: [50, 50],
+        iconAnchor: [25, 25]
       })
-      this.lines.push(flightRemainingLine)
-    */
+      const flightBearing = this.GetBearing(startCoordinates.wrap(), endCoordinates.wrap())
+      new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing }).addTo(map)
     })
   }
 
-  private addMarkerForAirport (airport :Airport) {
-    const marker = {
-      id: airport.iata,
-      position: {
-        lat: airport.latitude,
-        lng: airport.longitude
-      },
-      tooltip: airport.iata + '/' + airport.icao
-    }
-    // don't allow duplicates
-    if (this.markers.find(m => m.id === marker.id) == null) {
-      this.markers.push(marker)
-    }
+  private getMarkerForAirport (airport :Airport) :L.Marker {
+    const marker = new L.Marker(
+      [airport.latitude, airport.longitude],
+      { title: airport.iata + '/' + airport.icao })
+    return marker
+  }
+
+  private GetIntermediatePoint (startPoint :L.LatLng, endPoint :L.LatLng, percent :number) {
+    //  derived from geojs library: https://code.google.com/p/geojs/source/browse/trunk/src/math/earth.js
+    percent = percent / 100
+
+    const phi1 = this.ToRadians(startPoint.lat)
+    const phi2 = this.ToRadians(endPoint.lat)
+    const lmd1 = this.ToRadians(startPoint.lng)
+    const lmd2 = this.ToRadians(endPoint.lng)
+
+    const cosPhi1 = Math.cos(phi1)
+    const cosPhi2 = Math.cos(phi2)
+
+    const angularDistance = this.AngularDistance(startPoint, endPoint)
+    const sinAngularDistance = Math.sin(angularDistance)
+
+    const a = Math.sin((1 - percent) * angularDistance) / sinAngularDistance
+    const b = Math.sin(percent * angularDistance) / sinAngularDistance
+
+    const x = a * cosPhi1 * Math.cos(lmd1) +
+            b * cosPhi2 * Math.cos(lmd2)
+
+    const y = a * cosPhi1 * Math.sin(lmd1) +
+            b * cosPhi2 * Math.sin(lmd2)
+
+    const z = a * Math.sin(phi1) +
+            b * Math.sin(phi2)
+
+    const latitude = this.ToDegrees(Math.atan2(z, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2))))
+    const longitude = this.ToDegrees(Math.atan2(y, x))
+
+    return new L.LatLng(latitude, longitude)
+  }
+
+  // Converts from degrees to radians.
+  private ToRadians (degrees :number) {
+    return degrees * Math.PI / 180
+  }
+
+  // Converts from radians to degrees.
+  private ToDegrees (radians :number) {
+    return radians * 180 / Math.PI
+  }
+
+  private AngularDistance (startPoint :L.LatLng, endPoint :L.LatLng) {
+    var phi1 = this.ToRadians(startPoint.lat)
+    var phi2 = this.ToRadians(endPoint.lat)
+
+    var dPhi = this.ToRadians(endPoint.lat - startPoint.lat)
+    var dLmd = this.ToRadians(endPoint.lng - startPoint.lng)
+
+    var a = Math.pow(Math.sin(dPhi / 2), 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.pow(Math.sin(dLmd / 2), 2)
+
+    return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  }
+
+  private GetBearing (startPoint :L.LatLng, endPoint :L.LatLng) {
+    const startLat = this.ToRadians(startPoint.lat)
+    const startLng = this.ToRadians(startPoint.lng)
+    const endLat = this.ToRadians(endPoint.lat)
+    const endLng = this.ToRadians(endPoint.lng)
+
+    const y = Math.sin(endLng - startLng) * Math.cos(endLat)
+    const x = Math.cos(startLat) * Math.sin(endLat) -
+          Math.sin(startLat) * Math.cos(endLat) * Math.cos(endLng - startLng)
+    let result = Math.atan2(y, x)
+    result = this.ToDegrees(result)
+    return (result + 360) % 360
   }
 }
 </script>
 
 <style>
+#map{
+  position: absolute;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 100px;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+.info {
+  margin-right: 100px;
+  padding: 6px 8px;
+  font: 14px/16px Arial, Helvetica, sans-serif;
+  background: white;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
 
+.info h4 {
+  margin: 0 0 5px;
+  font: 22px/24px Arial, Helvetica, sans-serif;
+  color: #777;
+}
 </style>
