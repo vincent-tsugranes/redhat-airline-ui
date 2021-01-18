@@ -11,6 +11,7 @@ export class Airport {
         this.latitude = 0;
         this.longitude = 0;
     }
+
     distanceBetween(airport, unit = 'K') {
         const lat1 = this.latitude;
         const lon1 = this.longitude;
@@ -18,8 +19,7 @@ export class Airport {
         const lon2 = airport.longitude;
         if ((lat1 === lat2) && (lon1 === lon2)) {
             return 0;
-        }
-        else {
+        } else {
             var radlat1 = Math.PI * lat1 / 180;
             var radlat2 = Math.PI * lat2 / 180;
             var theta = lon1 - lon2;
@@ -41,4 +41,5 @@ export class Airport {
         }
     }
 }
+
 //# sourceMappingURL=airport.js.map

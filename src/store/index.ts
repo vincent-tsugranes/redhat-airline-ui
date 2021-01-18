@@ -1,28 +1,27 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { getFlightSchedule } from '../services/FlightService'
-import { Flight } from '../entity/flight'
+import {getFlightSchedule} from '../services/FlightService'
+import {Flight} from '../entity/flight'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  state: {
-    flights: [],
-    aircraft: []
-  },
-  mutations: {
-    setFlights (state, flights) {
-      state.flights = flights
-      // state.aircraft = GetAircraft(flights)
-    }
-  },
-  actions: {
-    async loadFlights ({ commit }): Promise<void> {
-      // commit('setFlights', GetFlights())
-    }
-  },
-  modules: {
-  }
+    state: {
+        flights: [],
+        aircraft: []
+    },
+    mutations: {
+        setFlights(state, flights) {
+            state.flights = flights
+            // state.aircraft = GetAircraft(flights)
+        }
+    },
+    actions: {
+        async loadFlights({commit}): Promise<void> {
+            // commit('setFlights', GetFlights())
+        }
+    },
+    modules: {}
 })
 
 /*

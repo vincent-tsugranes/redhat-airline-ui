@@ -9,8 +9,15 @@ import { Flight } from '../entity/flight'
 // eslint-disable-next-line no-unused-vars
 import { Airport } from '../entity/airport'
 
+// eslint-disable-next-line no-unused-vars
+import { Voyage } from '../entity/voyage'
+
+// eslint-disable-next-line no-unused-vars
+import { Port } from '../entity/port'
+
 import { Component, Vue } from 'vue-property-decorator'
 import { getFlightSchedule } from '../services/FlightService'
+import { getSchedule } from '../services/OceanShippingService'
 import * as luxon from 'luxon'
 import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
@@ -32,26 +39,17 @@ L.Icon.Default.mergeOptions({
 @Component
 export default class LiveMap extends Vue {
   flights: Array<Flight> = []
+  voyages: Array<Voyage> = []
   startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
   endDate = this.startDate.plus({ days: 2 })
 
   mounted () {
-    this.GetFlights()
+    const map = this.DisplayMap()
+    this.LoadAndDisplayFlights(map)
+    // this.LoadAndDisplayShips(map)
   }
 
-  private GetFlights () {
-    console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
-    getFlightSchedule(this.startDate.toISODate(), this.endDate.toISODate(), 10, 10).then(response => {
-      // console.log('all flights: ' + response.length)
-      this.flights = response.filter(f => {
-        return f.percentComplete() > 0 && f.percentComplete() < 100
-      })
-      console.log('live flights: ' + this.flights.length)
-      this.displayFlights()
-    })
-  }
-
-  private displayFlights () {
+  private DisplayMap () {
     var map = L.map('map').setView([51.505, -0.09], 3)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 15,
@@ -60,7 +58,35 @@ export default class LiveMap extends Vue {
       zoomOffset: -1,
       attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
     }).addTo(map)
+    return map
+  }
 
+  private LoadAndDisplayFlights (map :L.Map) {
+    console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
+    getFlightSchedule(this.startDate.toISODate(), this.endDate.toISODate(), 10, 10).then(response => {
+      // console.log('all flights: ' + response.length)
+      this.flights = response.filter(f => {
+        return f.percentComplete() > 0 && f.percentComplete() < 100
+      })
+      console.log('live flights: ' + this.flights.length)
+      this.DisplayFlights(map)
+    })
+  }
+
+  private LoadAndDisplayShips (map :L.Map) {
+    const shipStartDate = luxon.DateTime.utc().minus({ days: 20 }).startOf('day')
+    const shipEndDate = shipStartDate.plus({ days: 10 }).startOf('day')
+    console.log('Ship Schedule from', shipStartDate.toISODate(), 'to', shipEndDate.toISODate())
+    getSchedule(shipStartDate.toISODate(), shipEndDate.toISODate(), 20, 5).then(response => {
+      this.voyages = response.filter(v => {
+        return v.percentComplete() > 0 && v.percentComplete() < 100
+      })
+      console.log('live voyages: ' + this.voyages.length)
+      this.DisplayShips(map)
+    })
+  }
+
+  private DisplayFlights (map :L.Map) {
     this.flights.forEach(flight => {
       this.getMarkerForAirport(flight.departure_airport).addTo(map)
       this.getMarkerForAirport(flight.arrival_airport).addTo(map)
@@ -100,6 +126,41 @@ export default class LiveMap extends Vue {
     const marker = new L.Marker(
       [airport.latitude, airport.longitude],
       { title: airport.iata + '/' + airport.icao })
+    return marker
+  }
+
+  private DisplayShips (map :L.Map) {
+    console.log('Displaying Ships')
+    this.voyages.forEach(voyage => {
+      this.getMarkerForShipPort(voyage.departurePort).addTo(map)
+      this.getMarkerForShipPort(voyage.arrivalPort).addTo(map)
+
+      const startCoordinates = new L.LatLng(voyage.departurePort.latitude, voyage.departurePort.longitude)
+      const endCoordinates = new L.LatLng(voyage.arrivalPort.latitude, voyage.arrivalPort.longitude)
+      const currentShipCoordinates = this.GetIntermediatePoint(startCoordinates, endCoordinates, voyage.percentComplete())
+
+      const remainingLineOptions = {
+        weight: 3,
+        opacity: 0.5,
+        color: 'blue',
+        steps: 20
+      }
+      new GeodesicLine([startCoordinates, endCoordinates], remainingLineOptions).addTo(map)
+
+      const shipIcon = new L.Icon({
+        iconUrl: require('../../public/img/shipIcon.svg'),
+        iconSize: [50, 50],
+        iconAnchor: [25, 25]
+      })
+      const ShipBearing = this.GetBearing(startCoordinates.wrap(), endCoordinates.wrap())
+      new L.Marker(currentShipCoordinates, { icon: shipIcon, title: voyage.shipPennant, rotationAngle: ShipBearing }).addTo(map)
+    })
+  }
+
+  private getMarkerForShipPort (port :Port) :L.Marker {
+    const marker = new L.Marker(
+      [port.latitude, port.longitude],
+      { title: port.name + '/' + port.code + ': ' + port.country })
     return marker
   }
 
