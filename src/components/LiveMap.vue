@@ -98,7 +98,7 @@ export default class LiveMap extends Vue {
         weight: 2,
         opacity: 0.5,
         color: 'grey',
-        steps: 20
+        steps: 10
       }
 
       new GeodesicLine([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(map)
@@ -107,7 +107,7 @@ export default class LiveMap extends Vue {
         weight: 3,
         opacity: 0.5,
         color: 'blue',
-        steps: 20
+        steps: 10
       }
       new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(map)
 
@@ -116,7 +116,7 @@ export default class LiveMap extends Vue {
         iconSize: [50, 50],
         iconAnchor: [25, 25]
       })
-      const flightBearing = this.GetBearing(startCoordinates.wrap(), endCoordinates.wrap())
+      const flightBearing = this.GetBearing(currentAircraftCoordinates, endCoordinates)
       new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing }).addTo(map)
     })
   }
