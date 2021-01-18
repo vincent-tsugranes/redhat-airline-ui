@@ -17,7 +17,7 @@ import { Port } from '../entity/port'
 
 import { Component, Vue } from 'vue-property-decorator'
 import { getFlightSchedule } from '../services/FlightService'
-import { getSchedule } from '../services/OceanShippingService'
+import { GetSchedule, GetRoute } from '../services/OceanShippingService'
 import * as luxon from 'luxon'
 import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
@@ -46,14 +46,13 @@ export default class LiveMap extends Vue {
   mounted () {
     const map = this.DisplayMap()
     this.LoadAndDisplayFlights(map)
-    // this.LoadAndDisplayShips(map)
+    this.LoadAndDisplayShips(map)
   }
 
   private DisplayMap () {
     var map = L.map('map').setView([51.505, -0.09], 3)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 15,
-      noWrap: true,
       tileSize: 512,
       zoomOffset: -1,
       attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
@@ -77,7 +76,7 @@ export default class LiveMap extends Vue {
     const shipStartDate = luxon.DateTime.utc().minus({ days: 20 }).startOf('day')
     const shipEndDate = shipStartDate.plus({ days: 10 }).startOf('day')
     console.log('Ship Schedule from', shipStartDate.toISODate(), 'to', shipEndDate.toISODate())
-    getSchedule(shipStartDate.toISODate(), shipEndDate.toISODate(), 20, 5).then(response => {
+    GetSchedule(shipStartDate.toISODate(), shipEndDate.toISODate(), 15, 5).then(response => {
       this.voyages = response.filter(v => {
         return v.percentComplete() > 0 && v.percentComplete() < 100
       })
@@ -137,16 +136,28 @@ export default class LiveMap extends Vue {
 
       const startCoordinates = new L.LatLng(voyage.departurePort.latitude, voyage.departurePort.longitude)
       const endCoordinates = new L.LatLng(voyage.arrivalPort.latitude, voyage.arrivalPort.longitude)
-      const currentShipCoordinates = this.GetIntermediatePoint(startCoordinates, endCoordinates, voyage.percentComplete())
+      // const currentShipCoordinates = this.GetIntermediatePoint(startCoordinates, endCoordinates, voyage.percentComplete())
 
-      const remainingLineOptions = {
-        weight: 3,
-        opacity: 0.5,
-        color: 'blue',
-        steps: 20
+      const routeLineOptions = {
+        className: 'shippingVoyage',
+        steps: 3,
+        wrap: true
       }
-      new GeodesicLine([startCoordinates, endCoordinates], remainingLineOptions).addTo(map)
 
+      GetRoute(startCoordinates, endCoordinates).then(response => {
+        try {
+          const routeLine = new L.Geodesic().addTo(map)
+          routeLine.fromGeoJson(response)
+          routeLine.options = routeLineOptions
+          routeLine.addTo(map)
+        } catch (error) {
+          console.log('Error trying to add shipping route: ' + error)
+        }
+      })
+
+      // new GeodesicLine([startCoordinates, endCoordinates], routeLineOptions).addTo(map)
+
+      /*
       const shipIcon = new L.Icon({
         iconUrl: require('../../public/img/shipIcon.svg'),
         iconSize: [50, 50],
@@ -154,6 +165,7 @@ export default class LiveMap extends Vue {
       })
       const ShipBearing = this.GetBearing(startCoordinates.wrap(), endCoordinates.wrap())
       new L.Marker(currentShipCoordinates, { icon: shipIcon, title: voyage.shipPennant, rotationAngle: ShipBearing }).addTo(map)
+      */
     })
   }
 
@@ -263,4 +275,11 @@ export default class LiveMap extends Vue {
   font: 22px/24px Arial, Helvetica, sans-serif;
   color: #777;
 }
+
+.shippingVoyage {
+  weight: 1;
+  opacity: 0.5;
+  color: 'green';
+}
+
 </style>
