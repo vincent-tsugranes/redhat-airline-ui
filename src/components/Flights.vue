@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-property-decorator'
 import { getFlightSchedule } from '../services/FlightService'
 // eslint-disable-next-line no-unused-vars
 import { Flight } from '../entity/flight'
@@ -51,7 +51,6 @@ import * as luxon from 'luxon'
 
 @Component
 export default class Flights extends Vue {
-  @Prop() private msg!: string;
   flights: Array<Flight> = []
 
   private GetFlights () {

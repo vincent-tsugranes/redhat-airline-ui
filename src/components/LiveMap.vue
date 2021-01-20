@@ -1,5 +1,6 @@
 <template>
-  <div id="map"></div>
+  <div id="map">
+  </div>
 </template>
 
 <script lang="ts">
@@ -42,11 +43,20 @@ export default class LiveMap extends Vue {
   voyages: Array<Voyage> = []
   startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
   endDate = this.startDate.plus({ days: 2 })
+  flightFeatures = new L.FeatureGroup()
+  shipFeatures = new L.FeatureGroup()
+  showFlights = true
+  showShips = false
 
   mounted () {
     const map = this.DisplayMap()
-    this.LoadAndDisplayFlights(map)
-    this.LoadAndDisplayShips(map)
+
+    if (this.showFlights) {
+      this.LoadAndDisplayFlights(map)
+    }
+    if (this.showShips) {
+      this.LoadAndDisplayShips(map)
+    }
   }
 
   private DisplayMap () {
@@ -57,7 +67,58 @@ export default class LiveMap extends Vue {
       zoomOffset: -1,
       attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
     }).addTo(map)
+
+    // add feature groups
+    this.flightFeatures.addTo(map)
+    this.shipFeatures.addTo(map)
+
+    const mapControl = new L.Control({ position: 'topright' })
+    const mapControlDiv = L.DomUtil.create('div', 'info')
+    mapControlDiv.id = 'mapControl'
+    mapControlDiv.innerHTML = '<h4>Map Layers</h4><br/>'
+
+    const flightCheckbox = L.DomUtil.create('div', 'flightControl', mapControlDiv)
+    flightCheckbox.innerHTML = '<input type="checkbox" name="flightCheckbox" checked> <label for="flightCheckbox">Flights</label><br>'
+    if (!this.showFlights) {
+      flightCheckbox.innerHTML = flightCheckbox.innerHTML.replace('checked', '')
+    }
+    flightCheckbox.onclick = (e) => {
+      e.stopPropagation()
+      this.showFlights = !this.showFlights
+      if (!this.showFlights) {
+        this.flightFeatures.clearLayers()
+      } else {
+        this.LoadAndDisplayFlights(map)
+      }
+      console.log('Flight Checkbox')
+    }
+    const shipsCheckbox = L.DomUtil.create('div', 'shipControl', mapControlDiv)
+    shipsCheckbox.innerHTML = '<input type="checkbox" name="shipsCheckbox" checked> <label for="shipsCheckbox">Ships</label><br>'
+    if (!this.showShips) {
+      shipsCheckbox.innerHTML = shipsCheckbox.innerHTML.replace('checked', '')
+    }
+    shipsCheckbox.onclick = (e) => {
+      e.stopPropagation()
+      this.showShips = !this.showShips
+      if (!this.showShips) {
+        this.shipFeatures.clearLayers()
+      } else {
+        this.LoadAndDisplayShips(map)
+      }
+      console.log('Ship Checkbox')
+    }
+
+    mapControl.onAdd = function (map) {
+      return mapControlDiv
+    }
+
+    mapControl.addTo(map)
+    console.log('Added MapControl: ' + mapControl)
     return map
+  }
+
+  private FlightsCheckbox () {
+    console.log('Flight Checkbox')
   }
 
   private LoadAndDisplayFlights (map :L.Map) {
@@ -87,8 +148,8 @@ export default class LiveMap extends Vue {
 
   private DisplayFlights (map :L.Map) {
     this.flights.forEach(flight => {
-      this.getMarkerForAirport(flight.departure_airport).addTo(map)
-      this.getMarkerForAirport(flight.arrival_airport).addTo(map)
+      this.getMarkerForAirport(flight.departure_airport).addTo(this.flightFeatures)
+      this.getMarkerForAirport(flight.arrival_airport).addTo(this.flightFeatures)
 
       const startCoordinates = new L.LatLng(flight.departure_airport.latitude, flight.departure_airport.longitude)
       const endCoordinates = new L.LatLng(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
@@ -101,7 +162,7 @@ export default class LiveMap extends Vue {
         steps: 10
       }
 
-      new GeodesicLine([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(map)
+      new GeodesicLine([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(this.flightFeatures)
 
       const remainingLineOptions = {
         weight: 3,
@@ -109,7 +170,7 @@ export default class LiveMap extends Vue {
         color: 'blue',
         steps: 10
       }
-      new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(map)
+      new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(this.flightFeatures)
 
       const flightIcon = new L.Icon({
         iconUrl: require('../../public/img/airplaneIcon.svg'),
@@ -117,7 +178,7 @@ export default class LiveMap extends Vue {
         iconAnchor: [25, 25]
       })
       const flightBearing = this.GetBearing(currentAircraftCoordinates, endCoordinates)
-      new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing }).addTo(map)
+      new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing }).addTo(this.flightFeatures)
     })
   }
 
@@ -131,8 +192,8 @@ export default class LiveMap extends Vue {
   private DisplayShips (map :L.Map) {
     console.log('Displaying Ships')
     this.voyages.forEach(voyage => {
-      this.getMarkerForShipPort(voyage.departurePort).addTo(map)
-      this.getMarkerForShipPort(voyage.arrivalPort).addTo(map)
+      this.getMarkerForShipPort(voyage.departurePort).addTo(this.shipFeatures)
+      this.getMarkerForShipPort(voyage.arrivalPort).addTo(this.shipFeatures)
 
       const startCoordinates = new L.LatLng(voyage.departurePort.latitude, voyage.departurePort.longitude)
       const endCoordinates = new L.LatLng(voyage.arrivalPort.latitude, voyage.arrivalPort.longitude)
@@ -149,7 +210,7 @@ export default class LiveMap extends Vue {
           const routeLine = new L.Geodesic().addTo(map)
           routeLine.fromGeoJson(response)
           routeLine.options = routeLineOptions
-          routeLine.addTo(map)
+          routeLine.addTo(this.shipFeatures)
         } catch (error) {
           console.log('Error trying to add shipping route: ' + error)
         }
@@ -260,20 +321,20 @@ export default class LiveMap extends Vue {
   bottom: 0;
   width: 100%;
 }
-.info {
-  margin-right: 100px;
-  padding: 6px 8px;
+
+#mapControl {
+  margin-right: 60px !important;
+  padding: 6px 10px;
   font: 14px/16px Arial, Helvetica, sans-serif;
-  background: white;
-  background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
+  background-color: white !important;
 }
 
 .info h4 {
   margin: 0 0 5px;
-  font: 22px/24px Arial, Helvetica, sans-serif;
-  color: #777;
+  font: 16px/18px Arial, Helvetica, sans-serif;
+  color: black;
 }
 
 .shippingVoyage {
