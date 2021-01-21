@@ -1,9 +1,11 @@
 /* eslint-disable no-unused-vars */
 <template>
-      <div>
-          Flight Detail
+    <div>
+        <h4>Flight Detail</h4>
+        <div v-if="flight" v-bind="flight">
           {{ flight.departureAirport.iata }} - {{ flight.ArrivalAirport.iata }}
       </div>
+    </div>
 </template>
 
 <script lang="ts">
@@ -14,6 +16,10 @@ import { Flight } from '../entity/flight'
 
 @Component
 export default class FlightDetail extends Vue {
-    @Prop() private flight!: Flight;
+    @Prop() readonly flight!: Flight;
+
+    mounted () {
+      console.log('Flight Detail Mounted')
+    }
 }
 </script>

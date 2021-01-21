@@ -32,6 +32,11 @@ export default {
           href: '/map',
           title: 'Map',
           icon: 'fa fa-globe'
+        },
+        {
+          href: '/flights',
+          title: 'Flight List',
+          icon: 'fa fa-list'
         }
       ],
       collapsed: true
