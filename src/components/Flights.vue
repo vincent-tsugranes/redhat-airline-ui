@@ -1,6 +1,6 @@
 <template>
   <v-card>
-        <FlightDetail :flight="flight" />
+        <FlightDetail :flight="flight" :dialog="dialog" />
         <v-divider></v-divider>
         <v-card-title>
           <v-text-field
@@ -17,6 +17,7 @@
             :search="search"
             show-select
             :single-select=true
+            @click:row="rowClick"
           >
             <template slot="headers" scope="props">
               <tr>
@@ -63,6 +64,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import { getFlightSchedule } from '../services/FlightService'
 import FlightDetail from '@/components/FlightDetail.vue'
 import { Flight } from '../entity/flight'
+import { bus } from '../main'
 import * as luxon from 'luxon'
 
 @Component({
@@ -72,8 +74,8 @@ import * as luxon from 'luxon'
 })
 export default class Flights extends Vue {
   flights: Array<Flight> = []
-  // flight :Object = {}
   flight: Flight | null = null
+  dialog :Boolean = false
   dateFormat = 'MM/dd HHmm'
   search = ''
   headers = [
@@ -99,6 +101,12 @@ export default class Flights extends Vue {
     }
   }
 
+  rowClick (item :Flight, row :String) {
+    console.log('Selected: ' + item)
+    this.flight = item
+    bus.$emit('dialog', true)
+  }
+
   private GetFlights () {
     const startDate = luxon.DateTime.utc()
     const endDate = startDate.plus({ days: 7 })
@@ -107,13 +115,18 @@ export default class Flights extends Vue {
     })
   }
 
-  mounted () {
-    this.GetFlights()
+  created () {
+    var vm = this
+    bus.$on('dialog', function (value :Boolean) {
+      if (!value) {
+        vm.dialog = value
+        console.log('PARENT - Flight: ' + vm.flight + 'dialog: ' + value)
+      }
+    })
   }
 
-  OpenFlightDetail (flight :Flight) {
-    // const flightDetailModal = new FlightDetail({ flight: flight })
-    alert('Alert! opening flight modal')
+  mounted () {
+    this.GetFlights()
   }
 }
 

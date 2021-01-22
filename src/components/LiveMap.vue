@@ -4,16 +4,9 @@
 </template>
 
 <script lang="ts">
-// eslint-disable-next-line no-unused-vars
 import { Flight } from '../entity/flight'
-
-// eslint-disable-next-line no-unused-vars
 import { Airport } from '../entity/airport'
-
-// eslint-disable-next-line no-unused-vars
 import { Voyage } from '../entity/voyage'
-
-// eslint-disable-next-line no-unused-vars
 import { Port } from '../entity/port'
 
 import { Component, Vue } from 'vue-property-decorator'
@@ -24,7 +17,9 @@ import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
 import 'leaflet-rotatedmarker'
 
-// eslint-disable-next-line no-unused-vars
+import FlightDetail from '@/components/FlightDetail.vue'
+import { bus } from '../main'
+
 import { GeodesicLine } from 'leaflet.geodesic'
 type D = L.Icon.Default & {
   _getIconUrl?: string;
@@ -37,7 +32,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
 })
 
-@Component
+@Component({
+  components: {
+    FlightDetail
+  }
+})
 export default class LiveMap extends Vue {
   flights: Array<Flight> = []
   voyages: Array<Voyage> = []
@@ -47,6 +46,8 @@ export default class LiveMap extends Vue {
   shipFeatures = new L.FeatureGroup()
   showFlights = true
   showShips = false
+  flight: Flight | null = null
+  dialog :Boolean = false
 
   mounted () {
     const map = this.DisplayMap()
@@ -59,8 +60,18 @@ export default class LiveMap extends Vue {
     }
   }
 
+  created () {
+    var vm = this
+    bus.$on('dialog', function (value :Boolean) {
+      if (!value) {
+        vm.dialog = value
+        console.log('PARENT - Flight: ' + vm.flight + 'dialog: ' + value)
+      }
+    })
+  }
+
   private DisplayMap () {
-    var map = L.map('map').setView([51.505, -0.09], 3)
+    var map = L.map('map').setView([51.505, -0.09], 2)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 15,
       tileSize: 512,

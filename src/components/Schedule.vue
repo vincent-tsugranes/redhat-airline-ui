@@ -2,6 +2,7 @@
       <div>
         <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px">
         </div>
+        <FlightDetail :flight="flight" :dialog="dialog" />
         <!--
         <v-card v-if="displayMouseOverFlight" absolute left centered shaped style="z-index: 1000" elevation="2" outlined>
             <v-card-title>Flight Title</v-card-title>
@@ -14,11 +15,16 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { getFlightSchedule } from '../services/FlightService'
-// eslint-disable-next-line no-unused-vars
 import { Flight } from '../entity/flight'
 import * as luxon from 'luxon'
+import { bus } from '../main'
+import FlightDetail from '@/components/FlightDetail.vue'
 
-@Component
+@Component({
+  components: {
+    FlightDetail
+  }
+})
 export default class Schedule extends Vue {
   flights: Array<Flight> = []
   aircraft: Array<String> = []
@@ -39,10 +45,23 @@ export default class Schedule extends Vue {
   displayMouseOverFlight = false
   // mouseOverFlight: Flight = null
 
+  flight: Flight | null = null
+  dialog :Boolean = false
+
   data () {
     return {
       // mouseOverFlight: this.mouseOverFlight
     }
+  }
+
+  created () {
+    var vm = this
+    bus.$on('dialog', function (value :Boolean) {
+      if (!value) {
+        vm.dialog = value
+        console.log('PARENT - Flight: ' + vm.flight + 'dialog: ' + value)
+      }
+    })
   }
 
   mounted () {
@@ -158,7 +177,7 @@ export default class Schedule extends Vue {
     // draw box
     if (this.mouseoverCanvasContext != null) {
       this.mouseoverCanvasContext.clearRect(0, 0, this.mouseoverCanvas.width, this.mouseoverCanvas.height)
-      console.log('Displying tooltip for: ' + flight.asString())
+      // console.log('Displying tooltip for: ' + flight.asString())
       this.mouseoverCanvasContext.beginPath()
       if (x > this.mouseoverCanvas.width - this.aircraftBarWidth - boxWidth) {
         effectiveX = x - 10 - boxWidth
@@ -197,7 +216,16 @@ export default class Schedule extends Vue {
   private EventMouseClick (ev :MouseEvent) {
     const x = ev.offsetX
     const y = ev.offsetY
-    console.log('Clicked @ X: ' + x + '-Y:' + y)
+    const highlightedFlight = this.flights.filter(function (flight) {
+      return flight.inside(x, y)
+    })
+    if (highlightedFlight.length > 0) {
+      const flight = highlightedFlight[0]
+      this.flight = flight
+      console.log('Clicked @ X: ' + x + '-Y:' + y + ' flight:' + flight)
+      this.dialog = true
+      // bus.$emit('dialog', true)
+    }
   }
 
   private GetAllDays (startDate :luxon.DateTime, endDate :luxon.DateTime) {
