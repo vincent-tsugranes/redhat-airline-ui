@@ -158,6 +158,11 @@ export default class LiveMap extends Vue {
   }
 
   private DisplayFlights (map :L.Map) {
+    this.flightFeatures.on('click', function (event) {
+      var clickedMarker = event.layer
+      console.log('Clicked Flight Marker')
+    })
+
     this.flights.forEach(flight => {
       this.getMarkerForAirport(flight.departure_airport).addTo(this.flightFeatures)
       this.getMarkerForAirport(flight.arrival_airport).addTo(this.flightFeatures)
