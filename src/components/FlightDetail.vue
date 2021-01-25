@@ -1,6 +1,6 @@
 <template>
     <div>
-      <v-dialog v-model="dialog" v-if="flight" max-width="290" persistent>
+      <v-dialog v-model="dialog" v-if="flight" max-width="800" persistent>
         <v-card>
           <v-card-title>Flight Detail</v-card-title>
           <v-divider></v-divider>
@@ -8,6 +8,18 @@
             {{ flight.departure_airport.iata }} - {{ flight.arrival_airport.iata }}
           </v-card-text>
           <v-divider></v-divider>
+          <v-tabs>
+            <v-tab key="flight-info">Flight Summary</v-tab>
+            <v-tab key="flight-plan">Flightplan</v-tab>
+            <v-tab key="flight-pax">Passengers</v-tab>
+            <v-tab key="flight-cargo">Cargo</v-tab>
+          </v-tabs>
+            <v-tabs-items>
+              <v-tab-item key="flight-info">Flight Details Here</v-tab-item>
+              <v-tab-item key="flight-plan">Flight Plan</v-tab-item>
+              <v-tab-item key="flight-pax">Passengers</v-tab-item>
+              <v-tab-item key="flight-cargo">Cargo</v-tab-item>
+            </v-tabs-items>
           <v-card-actions>
             <v-btn
               color="blue darken-1"
