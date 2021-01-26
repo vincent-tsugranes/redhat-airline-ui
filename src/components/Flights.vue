@@ -1,6 +1,6 @@
 <template>
   <v-card>
-        <FlightDetail :flight="flight" :dialog="dialog" />
+        <FlightSummary :flight="flight" :dialog="dialog" />
         <v-divider></v-divider>
         <v-card-title>
           <v-text-field
@@ -15,19 +15,12 @@
             :headers="headers"
             :items="flights"
             :search="search"
-            show-select
             :single-select=true
             @click:row="rowClick"
           >
             <template slot="headers" scope="props">
               <tr>
                 <th>
-                  <v-checkbox
-                    primary
-                    hide-details
-                    :input-value="props.all"
-                    :indeterminate="props.indeterminate"
-                  ></v-checkbox>
                 </th>
                 <th v-for="header in props.headers" :key="header.text"
                   :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
@@ -40,13 +33,6 @@
             </template>
             <template slot="items" scope="props">
               <tr :active="props.selected" @click="props.selected = !props.selected">
-                <td>
-                  <v-checkbox
-                    primary
-                    hide-details
-                    :input-value="props.selected"
-                  ></v-checkbox>
-                </td>
                     <td class="text-left">{{ flight.id }}</td>
                     <td class="text-left">{{ flight.aircraft_registration }}</td>
                     <td class="text-left">{{ flight.departure_airport.iata }}</td>
@@ -62,14 +48,14 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { getFlightSchedule } from '../services/FlightService'
-import FlightDetail from '@/components/FlightDetail.vue'
+import FlightSummary from '@/components/flight/FlightSummary.vue'
 import { Flight } from '../entity/flight'
 import { bus } from '../main'
 import * as luxon from 'luxon'
 
 @Component({
   components: {
-    FlightDetail
+    FlightSummary
   }
 })
 export default class Flights extends Vue {
@@ -102,9 +88,10 @@ export default class Flights extends Vue {
   }
 
   rowClick (item :Flight, row :String) {
-    console.log('Selected: ' + item)
+    // console.log('Selected: ' + item)
     this.flight = item
-    bus.$emit('dialog', true)
+    this.dialog = true
+    // bus.$emit('dialog', true)
   }
 
   private GetFlights () {
@@ -120,7 +107,7 @@ export default class Flights extends Vue {
     bus.$on('dialog', function (value :Boolean) {
       if (!value) {
         vm.dialog = value
-        console.log('PARENT - Flight: ' + vm.flight + 'dialog: ' + value)
+        // console.log('PARENT - Flight: ' + vm.flight + 'dialog: ' + value)
       }
     })
   }

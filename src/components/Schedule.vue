@@ -2,7 +2,7 @@
       <div>
         <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px">
         </div>
-        <FlightDetail :flight="flight" :dialog="dialog" />
+        <FlightSummary :flight="flight" :dialog="dialog" />
         <!--
         <v-card v-if="displayMouseOverFlight" absolute left centered shaped style="z-index: 1000" elevation="2" outlined>
             <v-card-title>Flight Title</v-card-title>
@@ -18,11 +18,11 @@ import { getFlightSchedule } from '../services/FlightService'
 import { Flight } from '../entity/flight'
 import * as luxon from 'luxon'
 import { bus } from '../main'
-import FlightDetail from '@/components/FlightDetail.vue'
+import FlightSummary from '@/components/flight/FlightSummary.vue'
 
 @Component({
   components: {
-    FlightDetail
+    FlightSummary
   }
 })
 export default class Schedule extends Vue {
@@ -43,7 +43,6 @@ export default class Schedule extends Vue {
   flightPuckHeight = 25
   headerOffset = 20
   displayMouseOverFlight = false
-  // mouseOverFlight: Flight = null
 
   flight: Flight | null = null
   dialog :Boolean = false
@@ -222,9 +221,8 @@ export default class Schedule extends Vue {
     if (highlightedFlight.length > 0) {
       const flight = highlightedFlight[0]
       this.flight = flight
-      console.log('Clicked @ X: ' + x + '-Y:' + y + ' flight:' + flight)
+      console.log('Clicked @ X: ' + x + '-Y:' + y + ' flight.id:' + flight.id)
       this.dialog = true
-      // bus.$emit('dialog', true)
     }
   }
 

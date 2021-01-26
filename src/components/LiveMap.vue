@@ -1,5 +1,8 @@
 <template>
+<div>
   <div id="map">
+  </div>
+  <FlightSummary :flight="flight" :dialog="dialog" />
   </div>
 </template>
 
@@ -17,7 +20,7 @@ import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
 import 'leaflet-rotatedmarker'
 
-import FlightDetail from '@/components/FlightDetail.vue'
+import FlightSummary from '@/components/flight/FlightSummary.vue'
 import { bus } from '../main'
 
 import { GeodesicLine } from 'leaflet.geodesic'
@@ -34,7 +37,7 @@ L.Icon.Default.mergeOptions({
 
 @Component({
   components: {
-    FlightDetail
+    FlightSummary
   }
 })
 export default class LiveMap extends Vue {
@@ -157,11 +160,15 @@ export default class LiveMap extends Vue {
     })
   }
 
+  private FlightMarkerClick (event :L.LeafletEvent) {
+    var clickedMarker = event.layer
+    this.flight = clickedMarker.options.flight
+    this.dialog = true
+    console.log('Clicked Flight Marker - flight.id: ' + this.flight.id)
+  }
+
   private DisplayFlights (map :L.Map) {
-    this.flightFeatures.on('click', function (event) {
-      var clickedMarker = event.layer
-      console.log('Clicked Flight Marker')
-    })
+    this.flightFeatures.on('click', this.FlightMarkerClick)
 
     this.flights.forEach(flight => {
       this.getMarkerForAirport(flight.departure_airport).addTo(this.flightFeatures)
@@ -188,13 +195,20 @@ export default class LiveMap extends Vue {
       }
       new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(this.flightFeatures)
 
+      /*
+      const flightMarker = L.Marker.extend({
+        options: {
+          object: Flight
+        }
+      })
+      */
       const flightIcon = new L.Icon({
         iconUrl: require('../../public/img/airplaneIcon.svg'),
         iconSize: [50, 50],
         iconAnchor: [25, 25]
       })
       const flightBearing = this.GetBearing(currentAircraftCoordinates, endCoordinates)
-      new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing }).addTo(this.flightFeatures)
+      const flightMarker = new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing, flight: flight }).addTo(this.flightFeatures)
     })
   }
 
@@ -336,6 +350,7 @@ export default class LiveMap extends Vue {
   top: 0;
   bottom: 0;
   width: 100%;
+  z-index: 2;
 }
 
 #mapControl {
