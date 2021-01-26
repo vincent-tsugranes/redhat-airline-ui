@@ -22,6 +22,7 @@ import 'leaflet-rotatedmarker'
 
 import FlightSummary from '@/components/flight/FlightSummary.vue'
 import { bus } from '../main'
+import { GetIntermediatePoint, GetBearing } from '../entity/utilities/mapping'
 
 import { GeodesicLine } from 'leaflet.geodesic'
 type D = L.Icon.Default & {
@@ -74,11 +75,12 @@ export default class LiveMap extends Vue {
   }
 
   private DisplayMap () {
-    var map = L.map('map').setView([51.505, -0.09], 2)
+    var map = L.map('map').setView([25, 0], 3)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 15,
       tileSize: 512,
       zoomOffset: -1,
+      noWrap: false,
       attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
     }).addTo(map)
 
@@ -176,13 +178,14 @@ export default class LiveMap extends Vue {
 
       const startCoordinates = new L.LatLng(flight.departure_airport.latitude, flight.departure_airport.longitude)
       const endCoordinates = new L.LatLng(flight.arrival_airport.latitude, flight.arrival_airport.longitude)
-      const currentAircraftCoordinates = this.GetIntermediatePoint(startCoordinates, endCoordinates, flight.percentComplete())
+      const currentAircraftCoordinates = GetIntermediatePoint(startCoordinates, endCoordinates, flight.percentComplete())
 
       const completeLineOptions = {
         weight: 2,
         opacity: 0.5,
         color: 'grey',
-        steps: 10
+        steps: 10,
+        wrap: false
       }
 
       new GeodesicLine([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(this.flightFeatures)
@@ -191,7 +194,8 @@ export default class LiveMap extends Vue {
         weight: 3,
         opacity: 0.5,
         color: 'blue',
-        steps: 10
+        steps: 10,
+        wrap: false
       }
       new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(this.flightFeatures)
 
@@ -207,7 +211,7 @@ export default class LiveMap extends Vue {
         iconSize: [50, 50],
         iconAnchor: [25, 25]
       })
-      const flightBearing = this.GetBearing(currentAircraftCoordinates, endCoordinates)
+      const flightBearing = GetBearing(currentAircraftCoordinates, endCoordinates)
       const flightMarker = new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing, flight: flight }).addTo(this.flightFeatures)
     })
   }
@@ -265,77 +269,6 @@ export default class LiveMap extends Vue {
       [port.latitude, port.longitude],
       { title: port.name + '/' + port.code + ': ' + port.country })
     return marker
-  }
-
-  private GetIntermediatePoint (startPoint :L.LatLng, endPoint :L.LatLng, percent :number) {
-    //  derived from geojs library: https://code.google.com/p/geojs/source/browse/trunk/src/math/earth.js
-    percent = percent / 100
-
-    const phi1 = this.ToRadians(startPoint.lat)
-    const phi2 = this.ToRadians(endPoint.lat)
-    const lmd1 = this.ToRadians(startPoint.lng)
-    const lmd2 = this.ToRadians(endPoint.lng)
-
-    const cosPhi1 = Math.cos(phi1)
-    const cosPhi2 = Math.cos(phi2)
-
-    const angularDistance = this.AngularDistance(startPoint, endPoint)
-    const sinAngularDistance = Math.sin(angularDistance)
-
-    const a = Math.sin((1 - percent) * angularDistance) / sinAngularDistance
-    const b = Math.sin(percent * angularDistance) / sinAngularDistance
-
-    const x = a * cosPhi1 * Math.cos(lmd1) +
-            b * cosPhi2 * Math.cos(lmd2)
-
-    const y = a * cosPhi1 * Math.sin(lmd1) +
-            b * cosPhi2 * Math.sin(lmd2)
-
-    const z = a * Math.sin(phi1) +
-            b * Math.sin(phi2)
-
-    const latitude = this.ToDegrees(Math.atan2(z, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2))))
-    const longitude = this.ToDegrees(Math.atan2(y, x))
-
-    return new L.LatLng(latitude, longitude)
-  }
-
-  // Converts from degrees to radians.
-  private ToRadians (degrees :number) {
-    return degrees * Math.PI / 180
-  }
-
-  // Converts from radians to degrees.
-  private ToDegrees (radians :number) {
-    return radians * 180 / Math.PI
-  }
-
-  private AngularDistance (startPoint :L.LatLng, endPoint :L.LatLng) {
-    var phi1 = this.ToRadians(startPoint.lat)
-    var phi2 = this.ToRadians(endPoint.lat)
-
-    var dPhi = this.ToRadians(endPoint.lat - startPoint.lat)
-    var dLmd = this.ToRadians(endPoint.lng - startPoint.lng)
-
-    var a = Math.pow(Math.sin(dPhi / 2), 2) +
-            Math.cos(phi1) * Math.cos(phi2) *
-            Math.pow(Math.sin(dLmd / 2), 2)
-
-    return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  }
-
-  private GetBearing (startPoint :L.LatLng, endPoint :L.LatLng) {
-    const startLat = this.ToRadians(startPoint.lat)
-    const startLng = this.ToRadians(startPoint.lng)
-    const endLat = this.ToRadians(endPoint.lat)
-    const endLng = this.ToRadians(endPoint.lng)
-
-    const y = Math.sin(endLng - startLng) * Math.cos(endLat)
-    const x = Math.cos(startLat) * Math.sin(endLat) -
-          Math.sin(startLat) * Math.cos(endLat) * Math.cos(endLng - startLng)
-    let result = Math.atan2(y, x)
-    result = this.ToDegrees(result)
-    return (result + 360) % 360
   }
 }
 </script>

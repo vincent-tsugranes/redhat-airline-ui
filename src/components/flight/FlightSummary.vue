@@ -17,7 +17,7 @@
             <v-tab-item v-for="item in items" :key="item.tab">
               <v-card flat>
                 <v-card-text>
-                  <component v-bind:is="item.content" :flight="flight"></component>
+                  <component v-bind:is="item.content" :flight="flight" :key="flight.id + item.content"></component>
                 </v-card-text>
               </v-card>
             </v-tab-item>

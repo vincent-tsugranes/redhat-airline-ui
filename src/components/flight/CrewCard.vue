@@ -1,5 +1,7 @@
 <template>
     <v-card elevation="2">
+          ID: {{ crewmember.id }}
+          <br/>
           First Name: {{ crewmember.first_name }}
           <br/>
           Last Name: {{ crewmember.last_name }}

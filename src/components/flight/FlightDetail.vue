@@ -13,7 +13,7 @@
         <v-row>
           <v-col
             v-for="crewmember in flight.crewmembers"
-            :key="crewmember.last_name"
+            :key="crewmember.id"
           >
             <component v-bind:is="component" :crewmember="crewmember"></component>
           </v-col>
