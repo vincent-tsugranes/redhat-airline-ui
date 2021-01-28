@@ -7,8 +7,8 @@ import * as luxon from 'luxon'
 export class Flight {
     id: number = 0;
     aircraft_registration: string = '';
-    departure_airport: Airport = new Airport();
-    arrival_airport: Airport = new Airport();
+    departure_airport: Airport;
+    arrival_airport: Airport;
 
     distance: number = 0;
 
@@ -19,15 +19,20 @@ export class Flight {
 
     puck: Array<number> = [4]
 
-    public duration (): luxon.Duration {
-      return this.estimated_time_departure.diff(this.estimated_time_arrival)
+    public Duration (): luxon.Duration {
+      const duration = this.estimated_time_arrival.diff(this.estimated_time_departure, ['hours', 'minutes'])
+      return duration
+    }
+
+    public Distance () :number {
+      return this.departure_airport.distanceBetween(this.arrival_airport)
     }
 
     constructor (flight: Flight) {
       this.id = flight.id
       this.aircraft_registration = flight.aircraft_registration
-      this.departure_airport = flight.departure_airport
-      this.arrival_airport = flight.arrival_airport
+      this.departure_airport = new Airport(flight.departure_airport)
+      this.arrival_airport = new Airport(flight.arrival_airport)
       this.estimated_time_departure = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_departure)
       this.estimated_time_arrival = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_arrival)
       this.crewmembers = flight.crewmembers

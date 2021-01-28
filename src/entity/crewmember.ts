@@ -5,4 +5,5 @@ export class Crewmember {
     last_name: string = ''
     rating: string = ''
     base: string = ''
+    img: string = ''
 }

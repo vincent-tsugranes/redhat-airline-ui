@@ -3,11 +3,6 @@
       <v-dialog v-model="dialog" v-if="flight" max-width="800" persistent>
         <v-card>
           <v-card-title>Flight Summary</v-card-title>
-          <v-divider></v-divider>
-          <v-card-text>
-            {{ flight.departure_airport.iata }} - {{ flight.arrival_airport.iata }}
-          </v-card-text>
-          <v-divider></v-divider>
           <v-tabs v-model="tab" background-color="primary" dark>
             <v-tab v-for="item in items" :key="item.tab">
               {{ item.tab }}

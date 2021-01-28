@@ -10,6 +10,19 @@ export class Airport {
     latitude: number = 0;
     longitude: number = 0;
 
+    constructor (airport: Airport) {
+      this.iata = airport.iata
+      this.icao = airport.icao
+      this.name = airport.name
+      this.city = airport.city
+      this.state = airport.state
+      this.country = airport.country
+      this.tz = airport.tz
+      this.elevation = airport.elevation
+      this.latitude = airport.latitude
+      this.longitude = airport.longitude
+    }
+
     distanceBetween (airport: Airport, unit: string = 'K') {
       const lat1 = this.latitude
       const lon1 = this.longitude
@@ -36,7 +49,7 @@ export class Airport {
         if (unit === 'N') {
           dist = dist * 0.8684
         }
-        return dist
+        return +dist.toFixed(2)
       }
     }
 }
