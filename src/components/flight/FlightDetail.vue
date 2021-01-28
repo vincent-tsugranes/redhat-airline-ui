@@ -11,8 +11,7 @@
             Distance: {{ flight.Distance() }} km
           </v-card-text>
         </v-card>
-        <v-divider></v-divider>
-        Crewmembers
+        <v-divider />
         <br/>
         <v-row>
           <v-col

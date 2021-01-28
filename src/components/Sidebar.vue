@@ -67,6 +67,7 @@ export default {
 }
 
 .sidebar.v-sidebar-menu .vsm--mobile-item {
+  max-width: 200px;
   z-index: 0 !important;
 }
 .sidebar.v-sidebar-menu.vsm_collapsed .vsm--link_level-1:hover {

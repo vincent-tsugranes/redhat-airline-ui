@@ -1,5 +1,6 @@
 <template>
-    <v-card elevation="2" v-if="completeCrewmember">
+    <v-card elevation="6" v-if="completeCrewmember">
+      <v-card-title>{{ completeCrewmember.first_name }} {{ completeCrewmember.last_name }}</v-card-title>
         <v-container>
           <v-row no-gutters>
             <v-col class="text-left">
@@ -14,7 +15,10 @@
                 Base: {{ completeCrewmember.base }}
             </v-col>
             <v-col>
-                <v-img :src=completeCrewmember.img max-height="120" max-width="120"></v-img>
+                <v-img :src=completeCrewmember.img
+                max-height="120"
+                max-width="120"
+                style="border-radius: 5px"></v-img>
             </v-col>
             </v-row>
           </v-container>
