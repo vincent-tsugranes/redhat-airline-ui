@@ -47,6 +47,7 @@ export default class LiveMap extends Vue {
   startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
   endDate = this.startDate.plus({ days: 2 })
   flightFeatures = new L.FeatureGroup()
+  airportFeatures = new L.FeatureGroup()
   shipFeatures = new L.FeatureGroup()
   showFlights = true
   showShips = false
@@ -75,8 +76,8 @@ export default class LiveMap extends Vue {
   }
 
   private DisplayMap () {
-    var map = L.map('map').setView([25, 0], 3)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var map = L.map('map', { worldCopyJump: true }).setView([40, 0], 3)
+    L.tileLayer('https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
       maxZoom: 15,
       tileSize: 512,
       zoomOffset: -1,
@@ -87,6 +88,7 @@ export default class LiveMap extends Vue {
     // add feature groups
     this.flightFeatures.addTo(map)
     this.shipFeatures.addTo(map)
+    this.airportFeatures.addTo(map)
 
     const mapControl = new L.Control({ position: 'topright' })
     const mapControlDiv = L.DomUtil.create('div', 'info')
@@ -144,17 +146,6 @@ export default class LiveMap extends Vue {
     })
     console.log('live flights: ' + this.flights.length)
     this.DisplayFlights(map)
-
-    /*
-    getFlightSchedule(this.startDate.toISODate(), this.endDate.toISODate(), 10, 10).then(response => {
-      // console.log('all flights: ' + response.length)
-      this.flights = response.filter(f => {
-        return f.percentComplete() > 0 && f.percentComplete() < 100
-      })
-      console.log('live flights: ' + this.flights.length)
-      this.DisplayFlights(map)
-    })
-    */
   }
 
   private LoadAndDisplayShips (map :L.Map) {
@@ -196,24 +187,16 @@ export default class LiveMap extends Vue {
         wrap: false
       }
 
-      new GeodesicLine([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(this.flightFeatures)
+      const startLine = new L.Geodesic([startCoordinates, currentAircraftCoordinates], completeLineOptions).addTo(this.flightFeatures)
 
       const remainingLineOptions = {
         weight: 3,
-        opacity: 0.5,
-        color: 'blue',
         steps: 10,
         wrap: false
       }
-      new GeodesicLine([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(this.flightFeatures)
 
-      /*
-      const flightMarker = L.Marker.extend({
-        options: {
-          object: Flight
-        }
-      })
-      */
+      const endLine = new L.Geodesic([currentAircraftCoordinates, endCoordinates], remainingLineOptions).addTo(this.flightFeatures)
+
       const flightIcon = new L.Icon({
         iconUrl: require('../../public/img/airplaneIcon.svg'),
         iconSize: [50, 50],

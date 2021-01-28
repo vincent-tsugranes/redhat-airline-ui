@@ -81,8 +81,6 @@ export default class FlightPlan extends Vue {
 
       const remainingLineOptions = {
         weight: 3,
-        opacity: 0.5,
-        color: 'blue',
         steps: 10
       }
 
