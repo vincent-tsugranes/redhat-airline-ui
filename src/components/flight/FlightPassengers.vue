@@ -3,7 +3,7 @@
           <v-card-text>
             Booking Summary
             <br/>
-            <v-img content-class="seatmap" max-height="800" max-width="300" :src=getSeatmap()></v-img>
+            <v-img content-class="seatmap" contain :src=getSeatmap() max-height="800" max-width="200"></v-img>
           </v-card-text>
         </v-card>
 </template>
@@ -31,8 +31,3 @@ export default class FlightPassengers extends Vue {
     }
 }
 </script>
-<style>
-.seatmap {
-  transform: scale(2,0.5);
-}
-</style>
