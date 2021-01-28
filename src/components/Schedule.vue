@@ -9,6 +9,12 @@
             <v-card-text>Flight Details Here</v-card-text>
         </v-card>
         -->
+        <v-overlay :value="overlay">
+          <v-progress-circular
+            indeterminate
+            size="64"
+          ></v-progress-circular>
+        </v-overlay>
       </div>
 </template>
 
@@ -43,6 +49,7 @@ export default class Schedule extends Vue {
   flightPuckHeight = 25
   headerOffset = 20
   displayMouseOverFlight = false
+  overlay = true
 
   flight: Flight | null = null
   dialog :Boolean = false
@@ -66,18 +73,10 @@ export default class Schedule extends Vue {
 
   private GetFlights () {
     console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
-    /*
-    getFlightSchedule(this.startDate.toISODate(), this.endDate.toISODate(), 10, 20).then(response => {
-      this.flights = response
-      this.aircraft = this.GetAircraft(this.flights)
-      console.log('flights: ' + this.flights.length)
-      console.log('aircraft: ' + this.aircraft)
-      this.DrawCanvas()
-      this.DrawGrid()
-      this.DisplayAircraft()
-      this.DisplayFlights()
-    })
-    */
+    while (this.$store.state.flights.length === 0) {
+      this.overlay = true
+    }
+    this.overlay = false
     this.flights = this.$store.state.flights
     this.aircraft = this.GetAircraft(this.flights)
     console.log('flights: ' + this.flights.length)
@@ -278,6 +277,14 @@ export default class Schedule extends Vue {
         this.backgroundCanvasContext.lineTo(horizontalEndPixel, this.backgroundCanvas.height)
         this.backgroundCanvasContext.stroke()
         this.backgroundCanvasContext.closePath()
+
+        this.backgroundCanvasContext.beginPath()
+        this.backgroundCanvasContext.moveTo(13, 0)
+        this.backgroundCanvasContext.lineWidth = 1
+        this.backgroundCanvasContext.strokeStyle = 'grey'
+        this.backgroundCanvasContext.lineTo(13, this.backgroundCanvas.height + 20)
+        this.backgroundCanvasContext.stroke()
+        this.backgroundCanvasContext.closePath()
       }
     }
   }
@@ -421,15 +428,6 @@ export default class Schedule extends Vue {
             }
             const flightText = flight.departure_airport.iata + '-' + flight.arrival_airport.iata
             this.backgroundCanvasContext.fillText(flightText, x + 2, y + (this.flightPuckHeight / 2) + 2)
-
-            /*
-            const flightString = ' : '.concat(
-              flight.id.toString(),
-              flight.departure_airport.iata, '-', flight.arrival_airport.iata,
-              ' from ', flight.estimated_time_departure.toISO(), ' to ', flight.estimated_time_arrival.toISO())
-
-            console.log('Flight: ' + flightText + ' minutesFromStart=' + minutesFromStart + flightString)
-            */
           }
         })
       }

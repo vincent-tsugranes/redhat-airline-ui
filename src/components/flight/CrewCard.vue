@@ -1,6 +1,6 @@
 <template>
     <v-card elevation="6" v-if="completeCrewmember">
-      <v-card-title>{{ completeCrewmember.first_name }} {{ completeCrewmember.last_name }}</v-card-title>
+      <v-card-title style="padding-bottom: 0px">{{ completeCrewmember.first_name }} {{ completeCrewmember.last_name }}</v-card-title>
         <v-container>
           <v-row no-gutters>
             <v-col class="text-left">
