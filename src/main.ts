@@ -10,6 +10,10 @@ import '@fortawesome/fontawesome-free/css/all.css'
 
 import VueSidebarMenu from 'vue-sidebar-menu'
 import 'vue-sidebar-menu/dist/vue-sidebar-menu.css'
+import store from './store'
+
+import Vuex from 'vuex'
+Vue.use(Vuex)
 
 Vue.config.productionTip = false
 
@@ -18,7 +22,11 @@ Vue.use(VueSidebarMenu)
 new Vue({
   router,
   vuetify,
-  render: h => h(App)
+  store,
+  render: h => h(App),
+  beforeCreate: function () {
+    this.$store.dispatch('GetFlights')
+  }
 }).$mount('#app')
 
 export const bus = new Vue()

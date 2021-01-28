@@ -138,7 +138,14 @@ export default class LiveMap extends Vue {
   }
 
   private LoadAndDisplayFlights (map :L.Map) {
-    console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
+    this.flights = this.$store.state.flights
+    this.flights = this.flights.filter(f => {
+      return f.percentComplete() > 0 && f.percentComplete() < 100
+    })
+    console.log('live flights: ' + this.flights.length)
+    this.DisplayFlights(map)
+
+    /*
     getFlightSchedule(this.startDate.toISODate(), this.endDate.toISODate(), 10, 10).then(response => {
       // console.log('all flights: ' + response.length)
       this.flights = response.filter(f => {
@@ -147,6 +154,7 @@ export default class LiveMap extends Vue {
       console.log('live flights: ' + this.flights.length)
       this.DisplayFlights(map)
     })
+    */
   }
 
   private LoadAndDisplayShips (map :L.Map) {

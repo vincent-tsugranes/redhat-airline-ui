@@ -1,6 +1,6 @@
 <template>
       <div>
-        <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px">
+        <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px" v-if="this.$store.state.flights">
         </div>
         <FlightSummary :flight="flight" :dialog="dialog" />
         <!--
@@ -47,10 +47,7 @@ export default class Schedule extends Vue {
   flight: Flight | null = null
   dialog :Boolean = false
 
-  data () {
-    return {
-      // mouseOverFlight: this.mouseOverFlight
-    }
+  beforeCreate () {
   }
 
   created () {
@@ -69,6 +66,7 @@ export default class Schedule extends Vue {
 
   private GetFlights () {
     console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
+    /*
     getFlightSchedule(this.startDate.toISODate(), this.endDate.toISODate(), 10, 20).then(response => {
       this.flights = response
       this.aircraft = this.GetAircraft(this.flights)
@@ -79,6 +77,15 @@ export default class Schedule extends Vue {
       this.DisplayAircraft()
       this.DisplayFlights()
     })
+    */
+    this.flights = this.$store.state.flights
+    this.aircraft = this.GetAircraft(this.flights)
+    console.log('flights: ' + this.flights.length)
+    console.log('aircraft: ' + this.aircraft)
+    this.DrawCanvas()
+    this.DrawGrid()
+    this.DisplayAircraft()
+    this.DisplayFlights()
   }
 
   private GetAircraft (flights: Array<Flight>) {

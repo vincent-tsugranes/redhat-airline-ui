@@ -1,49 +1,34 @@
 import Vue from 'vue'
-import Vuex from 'vuex'
-import {getFlightSchedule} from '../services/FlightService'
-import {Flight} from '../entity/flight'
+import Vuex, { Commit } from 'vuex'
+import { getFlightSchedule } from '../services/FlightService'
+import * as luxon from 'luxon'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-    state: {
-        flights: [],
-        aircraft: []
-    },
-    mutations: {
-        setFlights(state, flights) {
-            state.flights = flights
-            // state.aircraft = GetAircraft(flights)
-        }
-    },
-    actions: {
-        async loadFlights({commit}): Promise<void> {
-            // commit('setFlights', GetFlights())
-        }
-    },
-    modules: {}
+  state: {
+    flights: [],
+    aircraft: []
+  },
+  mutations: {
+    setFlights (state, flights) {
+      state.flights = flights
+      console.log('SETTING STATE FOR FLIGHTS')
+    }
+  },
+  actions: {
+    async GetFlights ({ commit }): Promise<void> {
+      await LoadFlightData(commit)
+    }
+  },
+  modules: {}
 })
 
-/*
-function GetFlights () {
-  // eslint-disable-next-line no-array-constructor
-  var flights = new Array()
-  getFlightSchedule().then(response => {
-    flights = response
+function LoadFlightData (commit :Commit) {
+  console.log('STORE GETTING FLIGHTS')
+  const startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
+  const endDate = startDate.plus({ days: 7 })
+  getFlightSchedule(startDate.toISODate(), endDate.toISODate()).then(response => {
+    commit('setFlights', response)
   })
-  return flights
 }
-
-function GetAircraft (flights: Array<Flight>) {
-  // eslint-disable-next-line no-array-constructor
-  var aircraft = new Array()
-
-  flights.forEach(flight => {
-    if (!aircraft.includes(flight.aircraft_registration)) {
-      aircraft.push(flight.aircraft_registration)
-    }
-  })
-
-  return aircraft
-}
-*/

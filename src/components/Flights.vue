@@ -94,6 +94,7 @@ export default class Flights extends Vue {
     // bus.$emit('dialog', true)
   }
 
+  /*
   private GetFlights () {
     const startDate = luxon.DateTime.utc()
     const endDate = startDate.plus({ days: 7 })
@@ -101,6 +102,7 @@ export default class Flights extends Vue {
       this.flights = response
     })
   }
+  */
 
   created () {
     var vm = this
@@ -113,7 +115,7 @@ export default class Flights extends Vue {
   }
 
   mounted () {
-    this.GetFlights()
+    this.flights = this.$store.state.flights
   }
 }
 
