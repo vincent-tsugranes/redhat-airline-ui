@@ -115,7 +115,9 @@ export default class Flights extends Vue {
   }
 
   mounted () {
-    this.flights = this.$store.state.flights
+    this.$store.dispatch('ENSURE_ACTIVE_FLIGHTS').then(() => {
+      this.flights = this.$store.state.flights
+    })
   }
 }
 

@@ -1,7 +1,7 @@
 import { Flight } from '../entity/flight'
 import * as luxon from 'luxon'
 
-export async function getFlightSchedule (start: string, end: string, aircraftCount: number = 10, flightCount: number = 20) {
+export async function getFlightSchedule (start: string, end: string, aircraftCount: number = 15, flightCount: number = 20) {
   const scheduleUrl = 'http://localhost:9000/schedule?start=' + start + '&end=' + end + '&aircraftCount=' + aircraftCount + '&flightCount=' + flightCount
   console.log('Getting Schedule from ' + scheduleUrl)
   const flightsResponse = await fetch(scheduleUrl)

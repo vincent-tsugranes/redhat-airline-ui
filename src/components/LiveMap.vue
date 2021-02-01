@@ -140,12 +140,14 @@ export default class LiveMap extends Vue {
   }
 
   private LoadAndDisplayFlights (map :L.Map) {
-    this.flights = this.$store.state.flights
-    this.flights = this.flights.filter(f => {
-      return f.percentComplete() > 0 && f.percentComplete() < 100
+    this.$store.dispatch('ENSURE_ACTIVE_FLIGHTS').then(() => {
+      this.flights = this.$store.state.flights
+      this.flights = this.flights.filter(f => {
+        return f.percentComplete() > 0 && f.percentComplete() < 100
+      })
+      console.log('live flights: ' + this.flights.length)
+      this.DisplayFlights(map)
     })
-    console.log('live flights: ' + this.flights.length)
-    this.DisplayFlights(map)
   }
 
   private LoadAndDisplayShips (map :L.Map) {

@@ -7,28 +7,34 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    loaded: false,
     flights: [],
     aircraft: []
   },
   mutations: {
-    setFlights (state, flights) {
+    SET_FLIGHTS (state, flights) {
+      // console.log('SETTING FLIGHTS')
       state.flights = flights
-      console.log('SETTING STATE FOR FLIGHTS')
+      state.loaded = true
     }
   },
   actions: {
-    async GetFlights ({ commit }): Promise<void> {
-      await LoadFlightData(commit)
+    ENSURE_ACTIVE_FLIGHTS: ({ dispatch, getters }) => {
+      return dispatch('FETCH_FLIGHTS')
+    },
+    FETCH_FLIGHTS: ({ commit, state }) => {
+      if (state.flights.length === 0) {
+        // console.log('GETTING NEW FLIGHTS')
+        const startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
+        const endDate = startDate.plus({ days: 7 })
+        return getFlightSchedule(startDate.toISODate(), endDate.toISODate()).then(response => {
+          commit('SET_FLIGHTS', response)
+        })
+      } else {
+        // console.log('RETURNING EXISTING FLIGHTS')
+        return state.flights
+      }
     }
   },
   modules: {}
 })
-
-function LoadFlightData (commit :Commit) {
-  console.log('STORE GETTING FLIGHTS')
-  const startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
-  const endDate = startDate.plus({ days: 7 })
-  getFlightSchedule(startDate.toISODate(), endDate.toISODate()).then(response => {
-    commit('setFlights', response)
-  })
-}

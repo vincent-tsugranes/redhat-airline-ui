@@ -44,10 +44,10 @@ export default {
   },
   methods: {
     onItemClick (e, i) {
-      console.log('onItemClick')
+      // console.log('onItemClick')
     },
     onCollapse (c) {
-      console.log('onCollapse')
+      // console.log('onCollapse')
       this.collapsed = c
     }
   }

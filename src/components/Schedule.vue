@@ -1,6 +1,6 @@
-<template>
+<template v-if="this.$store.state.loaded">
       <div>
-        <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px" v-if="this.$store.state.flights">
+        <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px">
         </div>
         <FlightSummary :flight="flight" :dialog="dialog" />
         <!--
@@ -44,8 +44,8 @@ export default class Schedule extends Vue {
   mouseoverCanvasContext = this.mouseoverCanvas.getContext('2d')
   aircraftBarWidth = 70
   topOffset = 64
-  aircraftLineHeightMin = 50
-  aircraftLineHeightMax = 100
+  aircraftLineHeightMin = 40
+  aircraftLineHeightMax = 80
   flightPuckHeight = 25
   headerOffset = 20
   displayMouseOverFlight = false
@@ -73,18 +73,24 @@ export default class Schedule extends Vue {
 
   private GetFlights () {
     console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
+
+    /*
     while (this.$store.state.flights.length === 0) {
       this.overlay = true
     }
+    */
     this.overlay = false
-    this.flights = this.$store.state.flights
-    this.aircraft = this.GetAircraft(this.flights)
-    console.log('flights: ' + this.flights.length)
-    console.log('aircraft: ' + this.aircraft)
-    this.DrawCanvas()
-    this.DrawGrid()
-    this.DisplayAircraft()
-    this.DisplayFlights()
+
+    this.$store.dispatch('ENSURE_ACTIVE_FLIGHTS').then(() => {
+      this.flights = this.$store.state.flights
+      this.aircraft = this.GetAircraft(this.flights)
+      console.log('flights: ' + this.flights.length)
+      console.log('aircraft: ' + this.aircraft)
+      this.DrawCanvas()
+      this.DrawGrid()
+      this.DisplayAircraft()
+      this.DisplayFlights()
+    })
   }
 
   private GetAircraft (flights: Array<Flight>) {

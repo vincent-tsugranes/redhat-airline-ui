@@ -23,10 +23,7 @@ new Vue({
   router,
   vuetify,
   store,
-  render: h => h(App),
-  beforeCreate: function () {
-    this.$store.dispatch('GetFlights')
-  }
+  render: h => h(App)
 }).$mount('#app')
 
 export const bus = new Vue()
