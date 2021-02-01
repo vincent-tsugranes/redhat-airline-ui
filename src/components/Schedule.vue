@@ -14,9 +14,9 @@
             <v-btn
                 small
                 dark
-                @click="showDays(3)"
+                @click="showDays(4)"
               >
-                3 Days
+                4 Days
              </v-btn>
           </v-col>
           <v-col>
@@ -416,7 +416,9 @@ export default class Schedule extends Vue {
 
         aircraftFlights.forEach(flight => {
           const start = this.startDate
-          if (flight.estimated_time_arrival.toUTC() < this.startDate) {
+
+          // exlude flights that arrive before our visual date, and flights that depart after our visual date
+          if (flight.estimated_time_arrival.toUTC() < this.startDate.plus({ minutes: 1 }) || flight.estimated_time_departure.toUTC() > this.endDate) {
             return
           }
           console.log('START_DATE: ' + this.startDate.toISO())
@@ -467,7 +469,11 @@ export default class Schedule extends Vue {
             if (extendedEnd) {
               this.backgroundCanvasContext.clearRect(x + w - 1, y, x + w, this.flightPuckHeight)
             }
-            const flightText = flight.departure_airport.iata + '-' + flight.arrival_airport.iata
+            let flightText = flight.departure_airport.iata + '-' + flight.arrival_airport.iata
+
+            if (w < 20) {
+              flightText = flight.arrival_airport.iata
+            }
             this.backgroundCanvasContext.fillText(flightText, x + 2, y + (this.flightPuckHeight / 2) + 2)
           }
         })
