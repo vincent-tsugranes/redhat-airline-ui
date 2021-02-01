@@ -33,8 +33,8 @@ export class Flight {
       this.aircraft_registration = flight.aircraft_registration
       this.departure_airport = new Airport(flight.departure_airport)
       this.arrival_airport = new Airport(flight.arrival_airport)
-      this.estimated_time_departure = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_departure)
-      this.estimated_time_arrival = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_arrival)
+      this.estimated_time_departure = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_departure, { zone: 'utc' })
+      this.estimated_time_arrival = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_arrival, { zone: 'utc' })
       this.crewmembers = flight.crewmembers
     }
 

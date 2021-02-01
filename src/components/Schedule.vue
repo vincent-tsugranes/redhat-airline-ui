@@ -1,6 +1,35 @@
 <template v-if="this.$store.state.loaded">
       <div>
-        <div id="schedule" class="row" refs='schedule' style="padding-top: 20px; padding-bottom: 11px">
+        <v-row class="top-row">
+          <v-col>
+            <v-btn
+                small
+                dark
+                @click="showDays(1)"
+              >
+                Today
+             </v-btn>
+          </v-col>
+          <v-col>
+            <v-btn
+                small
+                dark
+                @click="showDays(3)"
+              >
+                3 Days
+             </v-btn>
+          </v-col>
+          <v-col>
+            <v-btn
+                small
+                dark
+                @click="showDays(7)"
+              >
+                Week
+             </v-btn>
+          </v-col>
+        </v-row>
+        <div id="schedule" class="row" refs='schedule'>
         </div>
         <FlightSummary :flight="flight" :dialog="dialog" />
         <!--
@@ -35,7 +64,7 @@ export default class Schedule extends Vue {
   flights: Array<Flight> = []
   aircraft: Array<String> = []
 
-  startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
+  startDate = luxon.DateTime.utc().minus({ days: 0 }).startOf('day')
   endDate = this.startDate.plus({ days: 4 })
   pixelsPerMinute = 0
   backgroundCanvas = document.createElement('canvas')
@@ -68,10 +97,16 @@ export default class Schedule extends Vue {
   }
 
   mounted () {
-    this.GetFlights()
+    this.GetAndDisplayFlights()
   }
 
-  private GetFlights () {
+  showDays (count: number) {
+    this.startDate = luxon.DateTime.utc().minus({ days: 0 }).startOf('day')
+    this.endDate = this.startDate.plus({ days: count })
+    this.GetAndDisplayFlights()
+  }
+
+  private GetAndDisplayFlights () {
     console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
 
     /*
@@ -205,10 +240,10 @@ export default class Schedule extends Vue {
       this.mouseoverCanvasContext.fillText(flight.departure_airport.iata + '-' + flight.arrival_airport.iata,
         effectiveX,
         y + 20)
-      this.mouseoverCanvasContext.fillText('ETD:' + flight.estimated_time_departure.toFormat(dateFormat),
+      this.mouseoverCanvasContext.fillText('ETD:' + flight.estimated_time_departure.toISO(), // toFormat(dateFormat)
         effectiveX,
         y + 30)
-      this.mouseoverCanvasContext.fillText('ETA:' + flight.estimated_time_arrival.toFormat(dateFormat),
+      this.mouseoverCanvasContext.fillText('ETA:' + flight.estimated_time_arrival.toISO(),
         effectiveX,
         y + 40)
       this.mouseoverCanvasContext.fillText('Status:' + flight.status(), effectiveX, y + 50)
@@ -299,7 +334,7 @@ export default class Schedule extends Vue {
     var hours = this.endDate.diff(this.startDate, 'hours').hours
     for (var i = 0; i < hours; i++) {
       if (i > 0 && i % 24 !== 0 && i % 2 === 0) {
-        var horizontalStartPixel = this.aircraftBarWidth + (i * 60 * this.pixelsPerMinute)
+        var horizontalStartPixel = (i * 60 * this.pixelsPerMinute) - this.aircraftBarWidth
         if (this.backgroundCanvasContext != null) {
           const thisHour = i % 24
           this.backgroundCanvasContext.beginPath()
@@ -376,11 +411,16 @@ export default class Schedule extends Vue {
         this.backgroundCanvasContext.stroke()
 
         const aircraftFlights = this.flights.filter(function (flight) {
-          return flight.aircraft_registration === ac
+          return (flight.aircraft_registration === ac)
         })
 
         aircraftFlights.forEach(flight => {
-          const minutesFromStart = flight.estimated_time_departure.diff(this.startDate, 'minutes').minutes
+          const start = this.startDate
+          if (flight.estimated_time_arrival.toUTC() < this.startDate) {
+            return
+          }
+          console.log('START_DATE: ' + this.startDate.toISO())
+          const minutesFromStart = flight.estimated_time_departure.toUTC().diff(this.startDate, 'minutes').minutes
           let minutesDuration = flight.estimated_time_arrival.diff(flight.estimated_time_departure, 'minutes').minutes
 
           if (flight.estimated_time_departure < this.startDate) {
@@ -390,11 +430,6 @@ export default class Schedule extends Vue {
           let startXPixel = minutesFromStart * this.pixelsPerMinute + this.aircraftBarWidth
           let endXPixel = minutesDuration * this.pixelsPerMinute
           const bottomYValue = ((aircraftIndex * heightPerSection) - ((1 / 2) * heightPerSection) + ((1 / 2) * this.flightPuckHeight)) + this.headerOffset
-
-          // if the flight didn't start in the current timeframe, it's duration is not all in the current timeframe
-          if (startXPixel < 0) {
-            endXPixel = endXPixel + startXPixel
-          }
 
           //  If the flight started before the current timeframe, draw it at the start
           if (startXPixel < this.aircraftBarWidth) {
@@ -457,6 +492,10 @@ export default class Schedule extends Vue {
 </script>
 
 <style>
+.top-row {
+  margin-top: 5px;
+}
+
 .mouseoverCanvas {
   position: absolute;
   background-color: transparent;
