@@ -13,7 +13,6 @@ import { Voyage } from '../entity/voyage'
 import { Port } from '../entity/port'
 
 import { Component, Vue } from 'vue-property-decorator'
-import { getFlightSchedule } from '../services/FlightService'
 import { GetSchedule, GetRoute } from '../services/OceanShippingService'
 import * as luxon from 'luxon'
 import 'leaflet/dist/leaflet.css'
@@ -140,7 +139,7 @@ export default class LiveMap extends Vue {
   }
 
   private LoadAndDisplayFlights (map :L.Map) {
-    this.$store.dispatch('ENSURE_ACTIVE_FLIGHTS').then(() => {
+    this.$store.dispatch('ENSURE_LOADED_FLIGHTS').then(() => {
       this.flights = this.$store.state.flights
       this.flights = this.flights.filter(f => {
         return f.percentComplete() > 0 && f.percentComplete() < 100
@@ -205,6 +204,8 @@ export default class LiveMap extends Vue {
         iconAnchor: [25, 25]
       })
       const flightBearing = GetBearing(currentAircraftCoordinates, endCoordinates)
+
+      // TODO: research https://stackoverflow.com/questions/31816061/why-am-i-getting-an-error-object-literal-may-only-specify-known-properties
       const flightMarker = new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing, flight: flight }).addTo(this.flightFeatures)
     })
   }

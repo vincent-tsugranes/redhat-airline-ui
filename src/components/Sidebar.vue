@@ -37,6 +37,11 @@ export default {
           href: '/flights',
           title: 'Flight List',
           icon: 'fa fa-list'
+        },
+        {
+          href: '/crewmembers',
+          title: 'Crewmembers',
+          icon: 'fa fa-user'
         }
       ],
       collapsed: true
@@ -67,7 +72,7 @@ export default {
 }
 
 .sidebar.v-sidebar-menu .vsm--mobile-item {
-  max-width: 200px;
+  max-width: 200px !important;
   z-index: 0 !important;
 }
 .sidebar.v-sidebar-menu.vsm_collapsed .vsm--link_level-1:hover {

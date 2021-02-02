@@ -6,9 +6,7 @@
             <v-col class="text-left">
                 ID: {{ completeCrewmember.id }}
                 <br/>
-                First Name: {{ completeCrewmember.first_name }}
-                <br/>
-                Last Name: {{ completeCrewmember.last_name }}
+                {{ completeCrewmember.first_name }} {{ completeCrewmember.last_name }}
                 <br/>
                 Rating: {{ completeCrewmember.rating }}
                 <br/>
@@ -38,9 +36,11 @@ export default class CrewCard extends Vue {
 
     created () {
       console.log('LOADING CREWMEMBER')
-      GetCrewmember(this.crewmember.id).then(c => {
-        this.completeCrewmember = c
-      })
+      if (this.crewmember.img === undefined) {
+        this.completeCrewmember = this.$store.getters.GetCrewmember(this.crewmember.id)
+      } else {
+        this.completeCrewmember = this.crewmember
+      }
     }
 
     mounted () {

@@ -15,3 +15,22 @@ export async function GetCrewmember (id: number) {
   crewmember.rating = jsonCrew.rating
   return crewmember
 }
+
+export async function GetCrewmembers () {
+  const crewList: Array<Crewmember> = []
+  const crewUrl = 'http://localhost:9000/crewmembers/'
+  const crewResponse = await fetch(crewUrl)
+  const jsonCrewList: Array<Crewmember> = JSON.parse(await crewResponse.text())
+
+  jsonCrewList.forEach(jsonCrewmember => {
+    const crewmember = new Crewmember()
+    crewmember.base = jsonCrewmember.base
+    crewmember.first_name = jsonCrewmember.first_name
+    crewmember.id = jsonCrewmember.id
+    crewmember.img = jsonCrewmember.img
+    crewmember.last_name = jsonCrewmember.last_name
+    crewmember.rating = jsonCrewmember.rating
+    crewList.push(crewmember)
+  })
+  return crewList
+}

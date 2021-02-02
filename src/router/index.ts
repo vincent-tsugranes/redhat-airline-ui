@@ -18,6 +18,11 @@ const routes = [
     path: '/flights',
     name: 'Flights',
     component: () => import('../components/Flights.vue')
+  },
+  {
+    path: '/crewmembers',
+    name: 'Crewmembers',
+    component: () => import('../components/CrewmemberList.vue')
   }
 ]
 

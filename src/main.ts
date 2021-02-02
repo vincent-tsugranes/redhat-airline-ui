@@ -19,6 +19,9 @@ Vue.config.productionTip = false
 
 Vue.use(VueSidebarMenu)
 
+store.dispatch('ENSURE_LOADED_FLIGHTS')
+store.dispatch('ENSURE_LOADED_CREWMEMBERS')
+
 new Vue({
   router,
   vuetify,

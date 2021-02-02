@@ -68,7 +68,8 @@
       "parser": "@typescript-eslint/parser"
     },
     "rules": {
-      "no-unused-vars": "off"
+      "no-unused-vars": "off",
+      "no-array-constructor": 0
     }
   },
   "browserslist": [

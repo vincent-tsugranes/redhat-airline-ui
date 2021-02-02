@@ -1,0 +1,16 @@
+﻿<svg version="1.1" class="coda-svg-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="410.916px" height="410.916px" viewBox="0 0 410.916 410.916" style="enable-background:new 0 0 410.916 410.916;"
+	 xml:space="preserve">
+<g>
+		<!--Grid-->
+		<path class="coda-svg-c08" d="M410.916,375.424v22.413H0V13.079h22.413v362.35h388.502V375.424z"/>
+		
+		<path class="coda-svg-c10" d="M308.185,38.854H52.301V64.07h255.884V38.854z" />
+		<path class="coda-svg-c10" d="M226.004,84.986H89.66v25.215h136.345V84.986z" />
+		<path class="coda-svg-c04" d="M205.458,148.024h136.344v-25.215H205.458V148.024z" />
+		<path class="coda-svg-c06" d="M210.125,202.476H73.78v25.216h136.345V202.476z" />
+		<path class="coda-svg-c06" d="M210.125,271.121v-25.214h-82.178v25.214H210.125z" />
+		<path class="coda-svg-c10" d="M296.045,303.338V278.12H216.66v25.218H296.045z" />
+		<path class="coda-svg-c10" d="M302.109,335.089h79.387v-25.214h-79.387V335.089z" />
+</g>
+</svg>

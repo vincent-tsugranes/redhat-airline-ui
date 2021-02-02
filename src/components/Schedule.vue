@@ -29,7 +29,7 @@
              </v-btn>
           </v-col>
         </v-row>
-        <div id="schedule" class="row" refs='schedule'>
+        <div id="schedule" class="schedule-row row" refs='schedule'>
         </div>
         <FlightSummary :flight="flight" :dialog="dialog" />
         <!--
@@ -49,7 +49,6 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import { getFlightSchedule } from '../services/FlightService'
 import { Flight } from '../entity/flight'
 import * as luxon from 'luxon'
 import { bus } from '../main'
@@ -116,45 +115,34 @@ export default class Schedule extends Vue {
     */
     this.overlay = false
 
-    this.$store.dispatch('ENSURE_ACTIVE_FLIGHTS').then(() => {
+    this.$store.dispatch('ENSURE_LOADED_FLIGHTS').then(() => {
       this.flights = this.$store.state.flights
-      this.aircraft = this.GetAircraft(this.flights)
+      this.aircraft = this.$store.state.aircraft
       console.log('flights: ' + this.flights.length)
       console.log('aircraft: ' + this.aircraft)
       this.DrawCanvas()
       this.DrawGrid()
       this.DisplayAircraft()
-      this.DisplayFlights()
     })
-  }
-
-  private GetAircraft (flights: Array<Flight>) {
-    // eslint-disable-next-line no-array-constructor
-    var aircraft = new Array()
-
-    flights.forEach(flight => {
-      if (!aircraft.includes(flight.aircraft_registration)) {
-        aircraft.push(flight.aircraft_registration)
-      }
-    })
-
-    return aircraft
-  }
-
-  private DisplayFlights () {
-    console.log('Displaying Flights')
   }
 
   private DrawCanvas () {
     let screenWidth = 1024
     let screenHeight = 768
 
-    screenWidth = window.innerWidth
+    screenWidth = window.innerWidth - this.topOffset
     screenHeight = window.innerHeight - this.topOffset
+
+    const minCanvasHeight = this.aircraftLineHeightMin * this.aircraft.length + this.topOffset
+
+    if (screenHeight < minCanvasHeight) {
+      screenHeight = minCanvasHeight
+    }
 
     window.addEventListener('resize', this.windowResize)
     const totalMinutes = this.endDate.diff(this.startDate, 'minutes').minutes
 
+    // this is a critical field - we use it to calculate flight width
     this.pixelsPerMinute = (screenWidth - this.aircraftBarWidth) / totalMinutes
 
     const scheduleDiv = document.getElementById('schedule')
@@ -189,7 +177,6 @@ export default class Schedule extends Vue {
     this.DrawCanvas()
     this.DrawGrid()
     this.DisplayAircraft()
-    this.DisplayFlights()
   }
 
   private EventMouseMove (ev :MouseEvent) {
@@ -280,7 +267,7 @@ export default class Schedule extends Vue {
 
     for (let i = 0; i < duration.days + 1; i++) {
       allDays.push(startDate.plus({ days: i }).toISODate())
-      console.log('DAY: ', startDate.plus({ days: i }).toISODate())
+      // console.log('DAY: ', startDate.plus({ days: i }).toISODate())
     }
     return allDays
   }
@@ -370,7 +357,7 @@ export default class Schedule extends Vue {
   }
 
   private DisplayAircraft () {
-    console.log('Displaying Aircraft')
+    // console.log('Displaying Aircraft')
 
     // how much space we leave for the day bar at the top
     let heightPerSection = (this.backgroundCanvas.height - this.headerOffset) / this.aircraft.length
@@ -421,7 +408,7 @@ export default class Schedule extends Vue {
           if (flight.estimated_time_arrival.toUTC() < this.startDate.plus({ minutes: 1 }) || flight.estimated_time_departure.toUTC() > this.endDate) {
             return
           }
-          console.log('START_DATE: ' + this.startDate.toISO())
+
           const minutesFromStart = flight.estimated_time_departure.toUTC().diff(this.startDate, 'minutes').minutes
           let minutesDuration = flight.estimated_time_arrival.diff(flight.estimated_time_departure, 'minutes').minutes
 
@@ -500,6 +487,10 @@ export default class Schedule extends Vue {
 <style>
 .top-row {
   margin-top: 5px;
+}
+
+.schedule-row {
+  margin-top: 10px;
 }
 
 .mouseoverCanvas {

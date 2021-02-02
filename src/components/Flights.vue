@@ -47,11 +47,9 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import { getFlightSchedule } from '../services/FlightService'
 import FlightSummary from '@/components/flight/FlightSummary.vue'
 import { Flight } from '../entity/flight'
 import { bus } from '../main'
-import * as luxon from 'luxon'
 
 @Component({
   components: {
@@ -72,7 +70,7 @@ export default class Flights extends Vue {
     { text: 'ETD', value: 'estimated_time_departure' },
     { text: 'ETA', value: 'estimated_time_arrival' }]
 
-  selected = []
+  selected: Array<Flight> = []
   pagination = {
     sortBy: 'name',
     descending: false
@@ -115,7 +113,7 @@ export default class Flights extends Vue {
   }
 
   mounted () {
-    this.$store.dispatch('ENSURE_ACTIVE_FLIGHTS').then(() => {
+    this.$store.dispatch('ENSURE_LOADED_FLIGHTS').then(() => {
       this.flights = this.$store.state.flights
     })
   }
