@@ -12,6 +12,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.0-3",
     "@patternfly/patternfly": "^4.80.3",
     "core-js": "^3.8.3",
+    "env-var": "^7.0.0",
     "gantt-elastic": "^1.0.12",
     "leaflet": "^1.7.1",
     "leaflet-rotatedmarker": "^0.2.0",

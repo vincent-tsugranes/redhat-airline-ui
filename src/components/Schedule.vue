@@ -491,6 +491,7 @@ export default class Schedule extends Vue {
 
 .schedule-row {
   margin-top: 10px;
+  margin-bottom: 12px;
 }
 
 .mouseoverCanvas {

@@ -1,8 +1,11 @@
 import { Crewmember } from '../entity/crewmember'
 import * as luxon from 'luxon'
+import * as env from 'env-var'
+
+const crewmemberApiUrl = env.get('CREWMEMBER_API_URL').default('http://localhost:9002').asString()
 
 export async function GetCrewmember (id: number) {
-  const crewUrl = 'http://localhost:9000/crewmembers/' + id
+  const crewUrl = crewmemberApiUrl + '/crewmembers/' + id
   const crewResponse = await fetch(crewUrl)
   const jsonCrew: Crewmember = JSON.parse(await crewResponse.text())
 
@@ -18,7 +21,7 @@ export async function GetCrewmember (id: number) {
 
 export async function GetCrewmembers () {
   const crewList: Array<Crewmember> = []
-  const crewUrl = 'http://localhost:9000/crewmembers/'
+  const crewUrl = crewmemberApiUrl + '/crewmembers/'
   const crewResponse = await fetch(crewUrl)
   const jsonCrewList: Array<Crewmember> = JSON.parse(await crewResponse.text())
 
