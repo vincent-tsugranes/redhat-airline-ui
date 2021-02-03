@@ -11,6 +11,7 @@
     "@fortawesome/fontawesome-free": "^5.15.2",
     "@fortawesome/vue-fontawesome": "^3.0.0-3",
     "@patternfly/patternfly": "^4.80.3",
+    "@vue/cli": "^4.5.11",
     "core-js": "^3.8.3",
     "env-var": "^7.0.0",
     "gantt-elastic": "^1.0.12",
