@@ -6,7 +6,19 @@ The front-end used Typescript and Vue.js, including components to visualize info
 
 It uses a suprisingly small amount of code to accomplish a lot, deployed on a platform that provides reliability and scalability
 
+It was developed using VS Code, and is entirely open source
 
+Schedule View:
+<img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-schedule.png"></img>
+
+Live Map:
+<img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-livemap.png"></img>
+
+Flight Drill-Down:
+<img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-flight-drilldown.png"> </img>
+
+Search for Flights, Airports, Crewmembers:
+<img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-search.png"> </img>
 
 ## Running Locally:
 ```
@@ -74,3 +86,4 @@ oc label deployment -l app=redhat-airline app.kubernetes.io/name=nodejs
 
 oc annotate deployment -l app=redhat-airline-ui app.openshift.io/connects-to='[{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-airport-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-crewmember-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-flight-api"}]'
 ```
+<img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-openshift-console.png"></img>
