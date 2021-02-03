@@ -9,6 +9,10 @@
             Duration: {{ formatDuration(flight.Duration()) }}
             <br/>
             Distance: {{ flight.Distance() }} km
+            <br/>
+            ETD: {{ formatFlightTime(flight.estimated_time_departure) }}
+            <br/>
+            ETA: {{ formatFlightTime(flight.estimated_time_arrival) }}
           </v-card-text>
         </v-card>
         <v-divider />
@@ -29,7 +33,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import { Flight } from '../../entity/flight'
 // import * as luxon from 'luxon'
 import CrewCard from '@/components/flight/CrewCard.vue'
-import { Duration } from 'luxon'
+import { Duration, DateTime } from 'luxon'
 
 @Component({
   components: {
@@ -49,6 +53,11 @@ export default class FlightDetail extends Vue {
     formatDuration (duration :Duration) {
       console.log(duration.hours + ' hours, ' + duration.minutes + ' minutes')
       return duration.hours + ' hours, ' + duration.minutes + ' minutes'
+    }
+
+    formatFlightTime (datetime: DateTime) {
+      const dateFormat = 'MM/dd HHmm'
+      return datetime.toFormat(dateFormat)
     }
 }
 </script>
