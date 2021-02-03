@@ -36,7 +36,7 @@ export default class CrewCard extends Vue {
 
     created () {
       console.log('LOADING CREWMEMBER')
-      if (this.crewmember.img === undefined) {
+      if (this.crewmember.img === undefined || this.crewmember.img === '') {
         this.completeCrewmember = this.$store.getters.GetCrewmember(this.crewmember.id)
       } else {
         this.completeCrewmember = this.crewmember

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex, { Commit } from 'vuex'
 import { GetFlightSchedule } from '../services/FlightService'
 import { GetCrewmembers } from '../services/CrewmemberService'
+import { GetAirports } from '../services/AirportService'
 import { Flight } from '../entity/flight'
 import * as luxon from 'luxon'
 
@@ -12,7 +13,8 @@ export default new Vuex.Store({
     loaded: false,
     flights: [],
     aircraft: [],
-    crewmembers: []
+    crewmembers: [],
+    airports: []
   },
   mutations: {
     SET_FLIGHTS (state, flights) {
@@ -23,6 +25,10 @@ export default new Vuex.Store({
     SET_CREWMEMBERS (state, crewmembers) {
       // console.log('SETTING CREWMEMBERS')
       state.crewmembers = crewmembers
+    },
+    SET_AIRPORTS (state, airports) {
+      // console.log('SETTING AIRPORTS')
+      state.airports = airports
     }
   },
   actions: {
@@ -53,7 +59,22 @@ export default new Vuex.Store({
           commit('SET_CREWMEMBERS', response)
         })
       } else {
-        // console.log('RETURNING EXISTING FLIGHTS')
+        // console.log('RETURNING EXISTING CREWMEMBERS')
+        return state.flights
+      }
+    },
+    ENSURE_LOADED_AIRPORTS: ({ dispatch, getters }) => {
+      return dispatch('FETCH_AIRPORTS')
+    },
+    FETCH_AIRPORTS: ({ commit, state }) => {
+      if (state.airports.length === 0) {
+        // console.log('GETTING AIRPORTS')
+
+        return GetAirports().then(response => {
+          commit('SET_AIRPORTS', response)
+        })
+      } else {
+        // console.log('RETURNING EXISTING AIRPORTS')
         return state.flights
       }
     }

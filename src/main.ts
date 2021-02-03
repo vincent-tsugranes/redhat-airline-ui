@@ -21,6 +21,7 @@ Vue.use(VueSidebarMenu)
 
 store.dispatch('ENSURE_LOADED_FLIGHTS')
 store.dispatch('ENSURE_LOADED_CREWMEMBERS')
+store.dispatch('ENSURE_LOADED_AIRPORTS')
 
 new Vue({
   router,

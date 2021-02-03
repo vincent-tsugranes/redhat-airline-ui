@@ -42,6 +42,11 @@ export default {
           href: '/crewmembers',
           title: 'Crewmembers',
           icon: 'fa fa-user'
+        },
+        {
+          href: '/airports',
+          title: 'Airports',
+          icon: 'fa fa-plane-departure'
         }
       ],
       collapsed: true

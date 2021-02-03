@@ -23,6 +23,11 @@ const routes = [
     path: '/crewmembers',
     name: 'Crewmembers',
     component: () => import('../components/CrewmemberList.vue')
+  },
+  {
+    path: '/airports',
+    name: 'Airports',
+    component: () => import('../components/AirportList.vue')
   }
 ]
 
