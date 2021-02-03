@@ -22,6 +22,7 @@ import 'leaflet-rotatedmarker'
 import FlightSummary from '@/components/flight/FlightSummary.vue'
 import { bus } from '../main'
 import { GetIntermediatePoint, GetBearing } from '../entity/utilities/mapping'
+import { FlightMarker } from '../entity/utilities/FlightMarker'
 
 import { GeodesicLine } from 'leaflet.geodesic'
 type D = L.Icon.Default & {
@@ -164,7 +165,7 @@ export default class LiveMap extends Vue {
 
   private FlightMarkerClick (event :L.LeafletEvent) {
     var clickedMarker = event.layer
-    this.flight = clickedMarker.options.flight
+    this.flight = clickedMarker.flight
     this.dialog = true
     console.log('Clicked Flight Marker - flight.id: ' + this.flight.id)
   }
@@ -205,8 +206,9 @@ export default class LiveMap extends Vue {
       })
       const flightBearing = GetBearing(currentAircraftCoordinates, endCoordinates)
 
-      // TODO: research https://stackoverflow.com/questions/31816061/why-am-i-getting-an-error-object-literal-may-only-specify-known-properties
-      const flightMarker = new L.Marker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing, flight: flight }).addTo(this.flightFeatures)
+      const marker = new FlightMarker(currentAircraftCoordinates, { icon: flightIcon, title: flight.asString(), rotationAngle: flightBearing })
+      marker.flight = flight
+      marker.addTo(this.flightFeatures)
     })
   }
 
