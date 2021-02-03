@@ -1,14 +1,26 @@
 <template>
     <v-card elevation="6">
-      <v-card-title style="padding-bottom: 0px">Airport: {{ airport.iata }} / {{ airport.icao }}</v-card-title>
-        <v-container>
-          <v-row no-gutters>
-            <v-col class="text-left text-lg-body-12">
-              Name: {{ airport.name }}
-            </v-col>
-            </v-row>
-          </v-container>
-        </v-card>
+        <v-list-item three-line>
+          <v-list-item-content>
+            <v-list-item-subtitle>
+              {{ airport.name }}
+            </v-list-item-subtitle>
+            <v-list-item-title class="headline mb-1">
+              {{ airport.iata }} / {{ airport.icao }}
+            </v-list-item-title>
+            <div class='text-left'>
+              <v-divider />
+              <v-list-item-subtitle>City: {{ airport.city }}</v-list-item-subtitle>
+              <v-list-item-subtitle>State: {{ airport.state }}</v-list-item-subtitle>
+              <v-list-item-subtitle>Country: {{ airport.country }}</v-list-item-subtitle>
+              <v-divider />
+              <v-list-item-subtitle>Timezone: {{ airport.tz }}</v-list-item-subtitle>
+              <v-list-item-subtitle>Elevation: {{ airport.elevation }}</v-list-item-subtitle>
+              <v-list-item-subtitle>Coordinates: {{ airport.latitude }}, {{ airport.longitude }}</v-list-item-subtitle>
+            </div>
+          </v-list-item-content>
+        </v-list-item>
+      </v-card>
 </template>
 
 <script lang="ts">
