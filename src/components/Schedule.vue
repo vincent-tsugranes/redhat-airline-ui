@@ -227,10 +227,10 @@ export default class Schedule extends Vue {
       this.mouseoverCanvasContext.fillText(flight.departure_airport.iata + '-' + flight.arrival_airport.iata,
         effectiveX,
         y + 20)
-      this.mouseoverCanvasContext.fillText('ETD:' + flight.estimated_time_departure.toISO(), // toFormat(dateFormat)
+      this.mouseoverCanvasContext.fillText('ETD:' + flight.estimated_time_departure.toFormat(dateFormat),
         effectiveX,
         y + 30)
-      this.mouseoverCanvasContext.fillText('ETA:' + flight.estimated_time_arrival.toISO(),
+      this.mouseoverCanvasContext.fillText('ETA:' + flight.estimated_time_arrival.toFormat(dateFormat),
         effectiveX,
         y + 40)
       this.mouseoverCanvasContext.fillText('Status:' + flight.status(), effectiveX, y + 50)
@@ -458,7 +458,7 @@ export default class Schedule extends Vue {
             }
             let flightText = flight.departure_airport.iata + '-' + flight.arrival_airport.iata
 
-            if (w < 20) {
+            if (w < 25) {
               flightText = flight.arrival_airport.iata
             }
             this.backgroundCanvasContext.fillText(flightText, x + 2, y + (this.flightPuckHeight / 2) + 2)
