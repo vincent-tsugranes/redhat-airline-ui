@@ -131,7 +131,6 @@ export default class LiveMap extends Vue {
     }
 
     mapControl.addTo(map)
-    console.log('Added MapControl: ' + mapControl)
     return map
   }
 

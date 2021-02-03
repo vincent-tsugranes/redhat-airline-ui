@@ -16,6 +16,7 @@ import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
 import 'leaflet-rotatedmarker'
 import { GetIntermediatePoint, GetBearing } from '../../entity/utilities/mapping'
+import { FlightMarker } from '../../entity/utilities/FlightMarker'
 
 import { GeodesicLine } from 'leaflet.geodesic'
 type D = L.Icon.Default & {
@@ -97,12 +98,10 @@ export default class FlightPlan extends Vue {
           iconAnchor: [25, 25]
         })
         const flightBearing = GetBearing(currentAircraftCoordinates, endCoordinates)
-        const flightMarker = new L.Marker(currentAircraftCoordinates, {
-          icon: flightIcon,
-          title: this.flight.asString(),
-          rotationAngle: flightBearing,
-          flight: this.flight
-        }).addTo(this.flightFeatures)
+
+        const marker = new FlightMarker(currentAircraftCoordinates, { icon: flightIcon, title: this.flight.asString(), rotationAngle: flightBearing })
+        marker.flight = this.flight
+        marker.addTo(this.flightFeatures)
       } else if (this.flight.percentComplete() === 0) {
         new GeodesicLine([startCoordinates, endCoordinates], remainingLineOptions).addTo(this.flightFeatures)
       } else {
