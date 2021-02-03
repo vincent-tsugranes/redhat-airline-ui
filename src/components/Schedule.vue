@@ -387,7 +387,11 @@ export default class Schedule extends Vue {
 
         // aircraft text
         this.backgroundCanvasContext.stroke()
-        this.backgroundCanvasContext.fillStyle = 'white'
+        if (this.$vuetify.theme.dark) {
+          this.backgroundCanvasContext.fillStyle = 'white'
+        } else {
+          this.backgroundCanvasContext.fillStyle = 'black'
+        }
         this.backgroundCanvasContext.fillText(ac.toString(), 20, (aircraftIndex * heightPerSection) - ((1 / 2) * heightPerSection) + this.headerOffset + 6)
 
         // line from aircraft sidebar through days

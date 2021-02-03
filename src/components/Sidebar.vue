@@ -73,11 +73,11 @@ export default {
 }
 
 .sidebar.v-sidebar-menu {
-  width: 200px;
+  width: 200px !important;
+  background-color: #2a2a2e
 }
 
 .sidebar.v-sidebar-menu .vsm--mobile-item {
-  max-width: 200px !important;
   z-index: 0 !important;
 }
 .sidebar.v-sidebar-menu.vsm_collapsed .vsm--link_level-1:hover {

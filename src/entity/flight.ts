@@ -68,9 +68,10 @@ export class Flight {
     }
 
     public asString (): string {
+      const dateFormat = 'MM/dd HHmm'
       return 'Flight: '.concat(
         this.id.toString(), ' ',
         this.departure_airport.iata, '-', this.arrival_airport.iata,
-        ' from ', this.estimated_time_departure.toISO(), ' to ', this.estimated_time_arrival.toISO())
+        ' from ', this.estimated_time_departure.toFormat(dateFormat), ' to ', this.estimated_time_arrival.toFormat(dateFormat))
     }
 }
