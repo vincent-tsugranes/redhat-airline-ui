@@ -16,14 +16,15 @@
           </v-card-text>
         </v-card>
         <v-divider />
-        <br/>
         <v-card-text class="text-left" v-if="totalDelayTime() > 0">
+          <br/>
           Total Delay Time: {{ Math.floor(totalDelayTime() / 60) }} hours, {{ totalDelayTime() % 60 }} minutes
         </v-card-text>
         <v-row v-for="delay in flight.delays"
             :key="delay.code">
           <DelayCard :delay="delay"></DelayCard>
         </v-row>
+        <br/>
         <v-row>
           <v-col
             v-for="crewmember in flight.crewmembers"

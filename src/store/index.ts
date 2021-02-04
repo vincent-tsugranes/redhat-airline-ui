@@ -38,9 +38,9 @@ export default new Vuex.Store({
     FETCH_FLIGHTS: ({ commit, state }) => {
       if (state.flights.length === 0) {
         // console.log('GETTING NEW FLIGHTS')
-        const startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
-        const endDate = startDate.plus({ days: 7 })
-        return GetFlightSchedule(startDate.toISODate(), endDate.toISODate()).then(response => {
+        const startDate = luxon.DateTime.utc().minus({ days: 10 }).startOf('day')
+        const endDate = startDate.plus({ days: 10 })
+        return GetFlightSchedule(startDate.toISODate(), endDate.toISODate(), 15, 50).then(response => {
           commit('SET_FLIGHTS', response)
         })
       } else {

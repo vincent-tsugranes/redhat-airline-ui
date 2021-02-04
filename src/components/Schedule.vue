@@ -3,6 +3,20 @@
         <v-row class="top-row">
           <v-col>
             <v-btn
+              class="mx-2"
+              fab
+              dark
+              x-small
+              color="primary"
+              @click="shiftLeft()"
+            >
+              <v-icon dark>
+                mdi-arrow-left
+              </v-icon>
+            </v-btn>
+          </v-col>
+          <v-col>
+            <v-btn
                 small
                 dark
                 @click="showDays(1)"
@@ -35,6 +49,20 @@
               color="primary"
               @click="toggleDelays()"
             ></v-switch>
+          </v-col>
+          <v-col>
+            <v-btn
+              class="mx-2"
+              fab
+              dark
+              x-small
+              color="primary"
+              @click="shiftRight()"
+            >
+              <v-icon dark>
+                mdi-arrow-right
+              </v-icon>
+            </v-btn>
           </v-col>
         </v-row>
         <div id="schedule" class="schedule-row row" refs='schedule'>
@@ -115,6 +143,18 @@ export default class Schedule extends Vue {
   }
 
   toggleDelays () {
+    this.GetAndDisplayFlights()
+  }
+
+  shiftRight () {
+    this.startDate = this.startDate.plus({ days: 1 })
+    this.endDate = this.endDate.plus({ days: 1 })
+    this.GetAndDisplayFlights()
+  }
+
+  shiftLeft () {
+    this.startDate = this.startDate.minus({ days: 1 })
+    this.endDate = this.endDate.minus({ days: 1 })
     this.GetAndDisplayFlights()
   }
 

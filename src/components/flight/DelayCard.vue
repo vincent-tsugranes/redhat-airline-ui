@@ -2,9 +2,15 @@
     <v-card elevation="6">
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title class="headline mb-1 red--text text-left">
-              {{ delay.minutes_duration }} min
-            </v-list-item-title>
+              <div class="my-2 text-left">
+                <v-btn
+                  color="error"
+                  fab
+                  large
+                >
+                  {{ delay.minutes_duration }} min
+                </v-btn>
+              </div>
             <div class='text-left'>
               <v-list-item-subtitle>Description: {{ delay.description }}</v-list-item-subtitle>
             </div>
