@@ -117,7 +117,7 @@ export default class Schedule extends Vue {
   showDelays = false
 
   flight: Flight | null = null
-  dialog :Boolean = false
+  dialog: Boolean = false
 
   beforeCreate () {
   }
@@ -533,7 +533,7 @@ export default class Schedule extends Vue {
     })
   }
 
-  private GetFlightColor (flight :Flight) {
+  private GetFlightColor (flight: Flight) {
     let color = 'blue'
     if (flight.status() === 'Complete') {
       color = 'blue'

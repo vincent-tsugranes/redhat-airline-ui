@@ -69,5 +69,35 @@ export default class FlightSummary extends Vue {
     toggleDialog () {
       bus.$emit('dialog', !this.dialog)
     }
+
+  /*
+    private NextFlight (flight: Flight, flights: Array<Flight>) {
+      const aircraftFlights = this.flights.filter(function (f) {
+        return (f.aircraft_registration === flight.aircraft_registration)
+      })
+      const sortedArray = aircraftFlights.sort((a, b) => a.estimated_time_departure.valueOf() - b.estimated_time_departure.valueOf())
+      const currentIndex = sortedArray.indexOf(flight)
+      if (sortedArray.length > currentIndex + 1) {
+        return sortedArray[currentIndex + 1]
+      } else {
+        // there is no next-flight
+        return sortedArray[currentIndex]
+      }
+    }
+
+    private LastFlight (flight: Flight, flights: Array<Flight>) {
+      const aircraftFlights = this.flights.filter(function (f) {
+        return (f.aircraft_registration === flight.aircraft_registration)
+      })
+      const sortedArray = aircraftFlights.sort((a, b) => a.estimated_time_departure.valueOf() - b.estimated_time_departure.valueOf())
+      const currentIndex = sortedArray.indexOf(flight)
+      if (sortedArray.length > currentIndex - 1) {
+        return sortedArray[currentIndex - 1]
+      } else {
+        // there is no next-flight
+        return sortedArray[currentIndex]
+      }
+    }
+  */
 }
 </script>
