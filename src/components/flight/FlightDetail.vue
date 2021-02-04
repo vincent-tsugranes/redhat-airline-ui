@@ -17,6 +17,13 @@
         </v-card>
         <v-divider />
         <br/>
+        <v-card-text class="text-left" v-if="totalDelayTime() > 0">
+          Total Delay Time: {{ Math.floor(totalDelayTime() / 60) }} hours, {{ totalDelayTime() % 60 }} minutes
+        </v-card-text>
+        <v-row v-for="delay in flight.delays"
+            :key="delay.code">
+          <DelayCard :delay="delay"></DelayCard>
+        </v-row>
         <v-row>
           <v-col
             v-for="crewmember in flight.crewmembers"
@@ -33,11 +40,13 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import { Flight } from '../../entity/flight'
 // import * as luxon from 'luxon'
 import CrewCard from '@/components/flight/CrewCard.vue'
+import DelayCard from '@/components/flight/DelayCard.vue'
 import { Duration, DateTime } from 'luxon'
 
 @Component({
   components: {
-    CrewCard
+    CrewCard,
+    DelayCard
   }
 })
 export default class FlightDetail extends Vue {
@@ -58,6 +67,12 @@ export default class FlightDetail extends Vue {
     formatFlightTime (datetime: DateTime) {
       const dateFormat = 'MM/dd HHmm'
       return datetime.toFormat(dateFormat)
+    }
+
+    totalDelayTime () {
+      let sum: number = 0
+      this.flight.delays.forEach(a => { sum += a.minutes_duration })
+      return sum
     }
 }
 </script>

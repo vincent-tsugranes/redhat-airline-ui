@@ -12,23 +12,23 @@
           </v-col>
           <v-col>
             <v-btn
-                small
-                dark
-                @click="showDays(4)"
-              >
-                4 Days
-             </v-btn>
+              small
+              dark
+              @click="showDays(4)"
+            >
+            4 Days
+            </v-btn>
           </v-col>
-          <v-col class="align-top">
+          <v-col>
             <v-btn
-                small
-                dark
-                @click="showDays(7)"
-              >
-                Week
+              small
+              dark
+              @click="showDays(7)"
+            >
+              Week
              </v-btn>
           </v-col>
-          <v-col class="align-top">
+          <v-col>
             <v-switch
               v-model="showDelays"
               label="Delays"
@@ -71,7 +71,7 @@ export default class Schedule extends Vue {
   flights: Array<Flight> = []
   aircraft: Array<String> = []
 
-  startDate = luxon.DateTime.utc().minus({ days: 0 }).startOf('day')
+  startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
   endDate = this.startDate.plus({ days: 4 })
   pixelsPerMinute = 0
   backgroundCanvas = document.createElement('canvas')
@@ -422,7 +422,7 @@ export default class Schedule extends Vue {
           const start = this.startDate
 
           // exlude flights that arrive before our visual date, and flights that depart after our visual date
-          if (flight.estimated_time_arrival.toUTC() < this.startDate.plus({ minutes: 1 }) || flight.estimated_time_departure.toUTC() > this.endDate) {
+          if (flight.estimated_time_arrival.toUTC() < this.startDate.plus({ minutes: 1 }) || flight.estimated_time_departure.toUTC() > this.endDate.minus({ minutes: 1 })) {
             return
           }
 
@@ -515,7 +515,7 @@ export default class Schedule extends Vue {
 }
 
 .schedule-row {
-  margin-top: 10px;
+  margin-top: 0px !important;
   margin-bottom: 12px;
 }
 
@@ -537,5 +537,8 @@ export default class Schedule extends Vue {
 .v-input--selection-controls {
   margin-top: 0px;
   padding-top: 0px;
+}
+.col {
+  padding: 0px;
 }
 </style>
