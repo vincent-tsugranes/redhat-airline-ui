@@ -99,7 +99,7 @@ export default class Schedule extends Vue {
   flights: Array<Flight> = []
   aircraft: Array<String> = []
 
-  startDate = luxon.DateTime.utc().minus({ days: 1 }).startOf('day')
+  startDate = luxon.DateTime.utc().minus({ days: 0 }).startOf('day')
   endDate = this.startDate.plus({ days: 4 })
   pixelsPerMinute = 0
   backgroundCanvas = document.createElement('canvas')
