@@ -19,7 +19,7 @@
                 4 Days
              </v-btn>
           </v-col>
-          <v-col>
+          <v-col class="align-top">
             <v-btn
                 small
                 dark
@@ -27,6 +27,14 @@
               >
                 Week
              </v-btn>
+          </v-col>
+          <v-col class="align-top">
+            <v-switch
+              v-model="showDelays"
+              label="Delays"
+              color="primary"
+              @click="toggleDelays()"
+            ></v-switch>
           </v-col>
         </v-row>
         <div id="schedule" class="schedule-row row" refs='schedule'>
@@ -78,6 +86,7 @@ export default class Schedule extends Vue {
   headerOffset = 20
   displayMouseOverFlight = false
   overlay = true
+  showDelays = false
 
   flight: Flight | null = null
   dialog :Boolean = false
@@ -102,6 +111,10 @@ export default class Schedule extends Vue {
   showDays (count: number) {
     this.startDate = luxon.DateTime.utc().minus({ days: 0 }).startOf('day')
     this.endDate = this.startDate.plus({ days: count })
+    this.GetAndDisplayFlights()
+  }
+
+  toggleDelays () {
     this.GetAndDisplayFlights()
   }
 
@@ -466,6 +479,14 @@ export default class Schedule extends Vue {
               flightText = flight.arrival_airport.iata
             }
             this.backgroundCanvasContext.fillText(flightText, x + 2, y + (this.flightPuckHeight / 2) + 2)
+            this.backgroundCanvasContext.closePath()
+            if (this.showDelays && flight.delays.length > 0) {
+              this.backgroundCanvasContext.beginPath()
+              this.backgroundCanvasContext.arc(x, y, 5, 0, 2 * Math.PI)
+              this.backgroundCanvasContext.fillStyle = 'red'
+              this.backgroundCanvasContext.fill()
+              this.backgroundCanvasContext.stroke()
+            }
           }
         })
       }
@@ -512,5 +533,9 @@ export default class Schedule extends Vue {
   touch-action: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
+}
+.v-input--selection-controls {
+  margin-top: 0px;
+  padding-top: 0px;
 }
 </style>

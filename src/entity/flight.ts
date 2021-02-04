@@ -2,6 +2,7 @@
 /* eslint-disable camelcase */
 import { Crewmember } from './crewmember'
 import { Airport } from './airport'
+import { Delay } from './delay'
 import * as luxon from 'luxon'
 
 export class Flight {
@@ -16,6 +17,8 @@ export class Flight {
     estimated_time_arrival: luxon.DateTime = luxon.DateTime.utc();
 
     crewmembers: Array<Crewmember> = new Array<Crewmember>();
+
+    delays: Array<Delay> = new Array<Delay>();
 
     puck: Array<number> = [4]
 
@@ -36,6 +39,7 @@ export class Flight {
       this.estimated_time_departure = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_departure, { zone: 'utc' })
       this.estimated_time_arrival = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_arrival, { zone: 'utc' })
       this.crewmembers = flight.crewmembers
+      this.delays = flight.delays
     }
 
     public status (): string {
