@@ -86,7 +86,6 @@ oc expose service/redhat-airline-ui
 ```
 oc label deployment -l app=redhat-airline app.kubernetes.io/name=nodejs
 
---this doesn't work with serverless - figure it out
 oc annotate deployment -l app=redhat-airline-ui app.openshift.io/connects-to='[{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-airport-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-crewmember-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-flight-api"}]'
 ```
 <img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-openshift-console.png"></img>

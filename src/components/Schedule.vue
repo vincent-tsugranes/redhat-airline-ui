@@ -112,8 +112,9 @@ export default class Schedule extends Vue {
   aircraftLineHeightMax = 80
   flightPuckHeight = 25
   headerOffset = 20
+  updateFrequency = 30 // seconds between redraws - current timeline moves
   displayMouseOverFlight = false
-  overlay = true
+  overlay = false
   showDelays = false
 
   flight: Flight | null = null
@@ -134,6 +135,7 @@ export default class Schedule extends Vue {
 
   mounted () {
     this.GetAndDisplayFlights()
+    window.setInterval(this.updateDisplay, this.updateFrequency * 1000)
   }
 
   showDays (count: number) {
@@ -159,20 +161,13 @@ export default class Schedule extends Vue {
   }
 
   private GetAndDisplayFlights () {
-    console.log('Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.toISODate())
-
-    /*
-    while (this.$store.state.flights.length === 0) {
-      this.overlay = true
-    }
-    */
-    this.overlay = false
+    console.log(luxon.DateTime.local().toUTC().toFormat('HHmm') + ' - Flight Schedule from', this.startDate.toISODate(), 'to', this.endDate.minus({ days: 1 }).toISODate())
 
     this.$store.dispatch('ENSURE_LOADED_FLIGHTS').then(() => {
       this.flights = this.$store.state.flights
       this.aircraft = this.$store.state.aircraft
-      console.log('flights: ' + this.flights.length)
-      console.log('aircraft: ' + this.aircraft)
+      // console.log('flights: ' + this.flights.length)
+      // console.log('aircraft: ' + this.aircraft)
       this.DrawCanvas()
       this.DrawGrid()
       this.DisplayAircraft()
@@ -192,7 +187,7 @@ export default class Schedule extends Vue {
       screenHeight = minCanvasHeight
     }
 
-    window.addEventListener('resize', this.windowResize)
+    window.addEventListener('resize', this.updateDisplay)
     const totalMinutes = this.endDate.diff(this.startDate, 'minutes').minutes
 
     // this is a critical field - we use it to calculate flight width
@@ -226,7 +221,7 @@ export default class Schedule extends Vue {
     this.DrawCurrentTimeline()
   }
 
-  private windowResize () {
+  private updateDisplay () {
     this.DrawCanvas()
     this.DrawGrid()
     this.DisplayAircraft()
