@@ -1,9 +1,7 @@
 import { Flight } from '../entity/flight'
-import * as luxon from 'luxon'
-import * as env from 'env-var'
 import { Airport } from '@/entity/airport'
 
-const airportApiUrl = env.get('AIRPORT_API_URL').default('http://localhost:9004').asString()
+const airportApiUrl = process.env.VUE_APP_AIRPORT_API_URL
 
 export async function GetAirports () {
   const airportsUrl = airportApiUrl + '/airports'

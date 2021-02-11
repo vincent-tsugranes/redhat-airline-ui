@@ -1,8 +1,6 @@
 import { Crewmember } from '../entity/crewmember'
-import * as luxon from 'luxon'
-import * as env from 'env-var'
 
-const crewmemberApiUrl = env.get('CREWMEMBER_API_URL').default('http://localhost:9002').asString()
+const crewmemberApiUrl = process.env.VUE_APP_CREWMEMBER_API_URL
 
 export async function GetCrewmember (id: number) {
   const crewUrl = crewmemberApiUrl + '/crewmembers/' + id

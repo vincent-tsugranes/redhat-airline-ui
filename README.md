@@ -72,9 +72,9 @@ oc expose service/redhat-airline-airport-api
 oc new-app \
   -n redhat-airline \
   --name=redhat-airline-ui nodejs:latest~https://github.com/vincent-tsugranes/redhat-airline-ui.git \
-  -e FLIGHT_API_URL=https://$(oc get route redhat-airline-flight-api -o json | jq -r '.spec.host') \
-  -e CREWMEMBER_API_URL=https://$(oc get route redhat-airline-crewmember-api -o json | jq -r '.spec.host') \
-  -e AIRPORT_API_URL=https://$(oc get route redhat-airline-airport-api -o json | jq -r '.spec.host') \
+  -e VUE_APP_FLIGHT_API_URL=https://$(oc get route redhat-airline-flight-api -o json | jq -r '.spec.host') \
+  -e VUE_APP_CREWMEMBER_API_URL=https://$(oc get route redhat-airline-crewmember-api -o json | jq -r '.spec.host') \
+  -e VUE_APP_AIRPORT_API_URL=https://$(oc get route redhat-airline-airport-api -o json | jq -r '.spec.host') \
   -l app=redhat-airline
 
 oc expose service/redhat-airline-ui
@@ -87,3 +87,7 @@ oc label deployment -l app=redhat-airline app.kubernetes.io/name=nodejs
 oc annotate deployment -l app=redhat-airline-ui app.openshift.io/connects-to='[{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-airport-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-crewmember-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-flight-api"}]'
 ```
 <img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-openshift-console.png"></img>
+
+
+## Developer notes:
+You can run these Node.js services locally without setting and environment variables. They default to ports 9001 and up, 

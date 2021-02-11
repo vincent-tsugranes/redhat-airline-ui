@@ -1,8 +1,7 @@
 import { Flight } from '../entity/flight'
-import * as luxon from 'luxon'
-import * as env from 'env-var'
 
-const flightApiUrl = env.get('FLIGHT_API_URL').default('http://localhost:9001').asString()
+const flightApiUrl = process.env.VUE_APP_FLIGHT_API_URL
+console.log('flightApiUrl: ' + flightApiUrl)
 
 export async function GetFlightSchedule (start: string, end: string, aircraftCount: number = 15, flightCount: number = 20) {
   const scheduleUrl = flightApiUrl + '/schedule?start=' + start + '&end=' + end + '&aircraftCount=' + aircraftCount + '&flightCount=' + flightCount
