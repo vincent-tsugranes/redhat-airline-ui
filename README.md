@@ -1,6 +1,6 @@
 Red Hat Airline is a fictional airline build to demonstrate cool technology for airlines and the transportation sector.
 
-It is made up of microservices written in Typescript, containerized and deployed on Openshift
+It is made up of microservices written in Typescript, containerized and deployed on Openshift. It also runs on OpenShift Serverless using knative, with [these instructions](#serverless)
 
 The front-end used Typescript and Vue.js, including components to visualize information in a meaningful way to airline management
 
@@ -68,6 +68,8 @@ oc expose service/redhat-airline-airport-api
 ```
 
 ##### Step 5 - Deploy and expose the web page
+
+if the services are deployed as typical OpenShift pods:
 ```
 oc new-app \
   -n redhat-airline \
@@ -84,10 +86,30 @@ oc expose service/redhat-airline-ui
 ```
 oc label deployment -l app=redhat-airline app.kubernetes.io/name=nodejs
 
+--this doesn't work with serverless - figure it out
 oc annotate deployment -l app=redhat-airline-ui app.openshift.io/connects-to='[{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-airport-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-crewmember-api"},{"apiVersion":"apps/v1","kind":"Deployment","name":"redhat-airline-flight-api"}]'
 ```
 <img src="https://github.com/vincent-tsugranes/redhat-airline-ui/raw/main/public/redhat-airline-openshift-console.png"></img>
 
 
 ## Developer notes:
-You can run these Node.js services locally without setting and environment variables. They default to ports 9001 and up, 
+You can run these Node.js services locally without setting and environment variables. They default to ports 9001 and up when running on local host, as defined in the .end.development file. For production, we set a PORT environment variable
+
+
+## Serverless
+Deploying each service individually using the command:
+```
+npx nodeshift --knative
+```
+
+The command to get the URL endpoints is a bit different when deploying the redhat-airline-ui project:
+```
+oc new-app \
+  -n redhat-airline \
+  --name=redhat-airline-ui nodejs:latest~https://github.com/vincent-tsugranes/redhat-airline-ui.git \
+  -e VUE_APP_FLIGHT_API_URL=$(oc get ksvc redhat-airline-flight-api -o json | jq -r '.status.url') \
+  -e VUE_APP_CREWMEMBER_API_URL=$(oc get ksvc redhat-airline-crewmember-api -o json | jq -r '.status.url') \
+  -e VUE_APP_AIRPORT_API_URL=$(oc get ksvc redhat-airline-airport-api -o json | jq -r '.status.url') \
+  -l app=redhat-airline
+```
+
