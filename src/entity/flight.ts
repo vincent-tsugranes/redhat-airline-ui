@@ -8,6 +8,7 @@ import * as luxon from 'luxon'
 export class Flight {
     id: number = 0;
     aircraft_registration: string = '';
+    aircraft_model: string = '';
     departure_airport: Airport;
     arrival_airport: Airport;
 
@@ -34,6 +35,7 @@ export class Flight {
     constructor (flight: Flight) {
       this.id = flight.id
       this.aircraft_registration = flight.aircraft_registration
+      this.aircraft_model = flight.aircraft_model
       this.departure_airport = new Airport(flight.departure_airport)
       this.arrival_airport = new Airport(flight.arrival_airport)
       this.estimated_time_departure = luxon.DateTime.fromISO(<string><unknown>flight.estimated_time_departure, { zone: 'utc' })

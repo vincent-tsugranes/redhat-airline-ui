@@ -2,6 +2,8 @@
     <div>
         <v-card>
           <v-card-text class="text-left">
+            Aircraft: {{ flight.aircraft_registration }} ({{ flight.aircraft_model }})
+            <br/>
             Departure Airport: {{ flight.departure_airport.iata }} / {{ flight.departure_airport.icao }} - {{ flight.departure_airport.name }}
             <br/>
             Arrival Airport: {{ flight.arrival_airport.iata }} / {{ flight.arrival_airport.icao }} - {{ flight.arrival_airport.name }}

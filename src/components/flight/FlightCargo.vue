@@ -27,7 +27,7 @@ export default class FlightCargo extends Vue {
     mounted () {
       GetRandomCargo(
         this.flight.aircraft_registration,
-        '747-400',
+        this.flight.aircraft_model,
         this.flight.departure_airport.iata,
         this.flight.arrival_airport.iata
       ).then(result => {
