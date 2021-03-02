@@ -109,6 +109,7 @@ oc new-app \
   -e VUE_APP_FLIGHT_API_URL=$(oc get ksvc redhat-airline-flight-api -o json | jq -r '.status.url') \
   -e VUE_APP_CREWMEMBER_API_URL=$(oc get ksvc redhat-airline-crewmember-api -o json | jq -r '.status.url') \
   -e VUE_APP_AIRPORT_API_URL=$(oc get ksvc redhat-airline-airport-api -o json | jq -r '.status.url') \
+  -e VUE_APP_CARGO_API_URL=$(oc get ksvc redhat-airline-cargo-api -o json | jq -r '.status.url') \
   -l app=redhat-airline
 ```
 
