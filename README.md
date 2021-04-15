@@ -58,6 +58,13 @@ oc new-app \
   --name=redhat-airline-airport-api nodejs:latest~https://github.com/vincent-tsugranes/redhat-airline-airport-api.git \
   -e PORT=8080 \
   -l app=redhat-airline
+
+oc new-app \
+  -n redhat-airline \
+  --name=redhat-airline-cargo-api nodejs:latest~https://github.com/vincent-tsugranes/redhat-airline-cargo-api.git \
+  -e PORT=8080 \
+  -l app=redhat-airline
+
 ```
 
 ##### Step 4 - expose those services so the client can call them
@@ -65,6 +72,7 @@ oc new-app \
 oc expose service/redhat-airline-flight-api
 oc expose service/redhat-airline-crewmember-api
 oc expose service/redhat-airline-airport-api
+oc expose service/redhat-airline-cargo-api
 ```
 
 ##### Step 5 - Deploy and expose the web page
@@ -74,9 +82,10 @@ if the services are deployed as typical OpenShift pods:
 oc new-app \
   -n redhat-airline \
   --name=redhat-airline-ui nodejs:latest~https://github.com/vincent-tsugranes/redhat-airline-ui.git \
-  -e VUE_APP_FLIGHT_API_URL=https://$(oc get route redhat-airline-flight-api -o json | jq -r '.spec.host') \
-  -e VUE_APP_CREWMEMBER_API_URL=https://$(oc get route redhat-airline-crewmember-api -o json | jq -r '.spec.host') \
-  -e VUE_APP_AIRPORT_API_URL=https://$(oc get route redhat-airline-airport-api -o json | jq -r '.spec.host') \
+  -e VUE_APP_FLIGHT_API_URL=http://$(oc get route redhat-airline-flight-api -o json | jq -r '.spec.host') \
+  -e VUE_APP_CREWMEMBER_API_URL=http://$(oc get route redhat-airline-crewmember-api -o json | jq -r '.spec.host') \
+  -e VUE_APP_AIRPORT_API_URL=http://$(oc get route redhat-airline-airport-api -o json | jq -r '.spec.host') \
+  -e VUE_APP_CARGO_API_URL=http://$(oc get route redhat-airline-cargo-api -o json | jq -r '.spec.host') \
   -l app=redhat-airline
 
 oc expose service/redhat-airline-ui
