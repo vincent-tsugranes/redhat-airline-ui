@@ -98,6 +98,7 @@ import FlightSummary from '@/components/flight/FlightSummary.vue'
 export default class Schedule extends Vue {
   flights: Array<Flight> = []
   aircraft: Array<String> = []
+  dateFilteredFlights: Array<Flight> = []
 
   startDate = luxon.DateTime.utc().minus({ days: 0 }).startOf('day')
   endDate = this.startDate.plus({ days: 4 })
@@ -166,8 +167,15 @@ export default class Schedule extends Vue {
     this.$store.dispatch('ENSURE_LOADED_FLIGHTS').then(() => {
       this.flights = this.$store.state.flights
       this.aircraft = this.$store.state.aircraft
-      // console.log('flights: ' + this.flights.length)
-      // console.log('aircraft: ' + this.aircraft)
+
+      // empty the filter array
+      this.dateFilteredFlights = []
+      this.flights.forEach(flight => {
+        // exlude flights that arrive before our visual date, and flights that depart after our visual date
+        if (flight.estimated_time_arrival.toUTC() > this.startDate.plus({ minutes: 1 }) && flight.estimated_time_departure.toUTC() < this.endDate.minus({ minutes: 1 })) {
+          this.dateFilteredFlights.push(flight)
+        }
+      })
       this.DrawCanvas()
       this.DrawGrid()
       this.DisplayAircraft()
@@ -178,7 +186,7 @@ export default class Schedule extends Vue {
     let screenWidth = 1024
     let screenHeight = 768
 
-    screenWidth = window.innerWidth - this.topOffset
+    screenWidth = window.innerWidth - this.aircraftBarWidth - 50
     screenHeight = window.innerHeight - this.topOffset
 
     const minCanvasHeight = this.aircraftLineHeightMin * this.aircraft.length + this.topOffset
@@ -211,6 +219,9 @@ export default class Schedule extends Vue {
 
       scheduleDiv.appendChild(this.backgroundCanvas)
       scheduleDiv.appendChild(this.mouseoverCanvas)
+
+      console.log('this.backgroundCanvas.width = ' + this.backgroundCanvas.width)
+      console.log('this.aircraftBarWidth = ' + this.aircraftBarWidth)
     }
   }
 
@@ -232,7 +243,7 @@ export default class Schedule extends Vue {
     const y = ev.offsetY
     // console.log('X: ' + x + '-Y:' + y)
     if (x > this.aircraftBarWidth) {
-      const highlightedFlight = this.flights.filter(function (flight) {
+      const highlightedFlight = this.dateFilteredFlights.filter(function (flight) {
         return flight.inside(x, y)
       })
       if (highlightedFlight.length > 0) {
@@ -480,7 +491,7 @@ export default class Schedule extends Vue {
           //  if flight extends to the next day
           let extendedEnd = false
           // If the flight ends after the current timeframe, draw it to the end
-          if ((startXPixel + endXPixel) > (this.backgroundCanvas.width - this.aircraftBarWidth)) {
+          if ((startXPixel + endXPixel) > (this.backgroundCanvas.width)) {
             endXPixel = this.backgroundCanvas.width - startXPixel// - this.aircraftBarWidth
             extendedEnd = true
           }
