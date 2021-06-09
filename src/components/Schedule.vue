@@ -68,12 +68,6 @@
         <div id="schedule" class="schedule-row row" refs='schedule'>
         </div>
         <FlightSummary :flight="flight" :dialog="dialog" />
-        <!--
-        <v-card v-if="displayMouseOverFlight" absolute left centered shaped style="z-index: 1000" elevation="2" outlined>
-            <v-card-title>Flight Title</v-card-title>
-            <v-card-text>Flight Details Here</v-card-text>
-        </v-card>
-        -->
         <v-overlay :value="overlay">
           <v-progress-circular
             indeterminate
@@ -219,9 +213,6 @@ export default class Schedule extends Vue {
 
       scheduleDiv.appendChild(this.backgroundCanvas)
       scheduleDiv.appendChild(this.mouseoverCanvas)
-
-      console.log('this.backgroundCanvas.width = ' + this.backgroundCanvas.width)
-      console.log('this.aircraftBarWidth = ' + this.aircraftBarWidth)
     }
   }
 
@@ -248,7 +239,6 @@ export default class Schedule extends Vue {
       })
       if (highlightedFlight.length > 0) {
         const flight = highlightedFlight[0]
-        // this.flightCardTitle = 'Flight: ' + flight.id.toString() + ' ' + flight.departure_airport.iata + '-' + flight.arrival_airport.iata
         this.displayMouseOverFlight = true
         this.DisplayTooltipForFlight(flight, x, y)
       } else {
