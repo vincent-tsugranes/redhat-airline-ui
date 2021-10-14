@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 export class Delay {
     code: number = 0;
     name: string = '';
