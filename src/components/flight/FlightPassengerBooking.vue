@@ -1,10 +1,16 @@
 <template>
   <v-card>
+    <v-card-title>Create Booking</v-card-title>
     <v-card-text>
       <form id="submit-booking-form" @submit.prevent="addBooking">
-        <span class="mx-2">Create Booking </span>
-        <input v-model="name" placeholder="passenger name" class="mx-2">
-        <button type="submit" class="button is-danger mx-2">Submit</button>
+        <v-row>
+          <v-col>
+            <v-text-field v-model="name" placeholder="passenger name" color="white" class="mx-3" />
+          </v-col>
+          <v-col align-self="center">
+            <v-btn v-show="name != ''" type="submit" class="button is-danger mx-2" color="primary">Submit</v-btn>
+          </v-col>
+        </v-row>
       </form>
     </v-card-text>
       <v-snackbar v-model="snackbar" :timeout="snackbarTimeout">
