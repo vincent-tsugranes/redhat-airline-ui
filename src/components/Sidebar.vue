@@ -47,6 +47,11 @@ export default {
           href: '/airports',
           title: 'Airports',
           icon: 'fa fa-plane-departure'
+        },
+        {
+          href: '/bookings',
+          title: 'Bookings',
+          icon: 'fa fa-book'
         }
       ],
       collapsed: true

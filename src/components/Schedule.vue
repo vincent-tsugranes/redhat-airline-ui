@@ -217,7 +217,6 @@ export default class Schedule extends Vue {
   }
 
   private DrawGrid () {
-    // console.log('Drawing grid for ' + this.GetAllDays(this.startDate, this.endDate))
     this.DrawDays()
     // this.DrawHours()
     this.DrawCurrentTimeline()
@@ -505,7 +504,6 @@ export default class Schedule extends Vue {
             } else {
               this.backgroundCanvasContext.fillStyle = 'black'
             }
-            // this.backgroundCanvasContext.fillStyle = 'white'
             if (extendedEnd) {
               this.backgroundCanvasContext.clearRect(x + w - 1, y, x + w, this.flightPuckHeight)
             }
