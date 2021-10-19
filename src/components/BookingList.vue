@@ -30,7 +30,7 @@
             <template slot="items" scope="props">
               <tr :active="props.selected" @click="props.selected = !props.selected">
                     <td class="text-left">{{ booking.id }}</td>
-                    <td class="text-left">{{ booking.name }}</td>
+                    <td class="text-left">{{ booking.passenger_name }}</td>
                     <td class="text-left">{{ booking.flight_id }}</td>
                     <td class="text-left">{{ booking.departure_airport_iata }}</td>
                     <td class="text-left">{{ booking.arrival_airport_iata }}</td>
@@ -56,7 +56,7 @@ export default class BookingList extends Vue {
   search = ''
   headers = [
     { text: 'ID', value: 'id' },
-    { text: 'Name', value: 'name' },
+    { text: 'Name', value: 'passenger_name' },
     { text: 'Flight ID', value: 'flight_id' },
     { text: 'DEP', value: 'departure_airport_iata' },
     { text: 'ARR', value: 'arrival_airport_iata' },

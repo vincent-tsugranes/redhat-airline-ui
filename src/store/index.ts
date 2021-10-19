@@ -6,7 +6,7 @@ import { GetAirports } from '../services/AirportService'
 import { Flight } from '../entity/flight'
 import { Booking } from '../entity/booking'
 import * as luxon from 'luxon'
-import { GetAllBookings } from '@/services/BookingService'
+import { GetAllBookings, UpsertBooking } from '@/services/BookingService'
 
 Vue.use(Vuex)
 
@@ -38,6 +38,7 @@ export default new Vuex.Store({
       state.bookings = bookings
     },
     ADD_BOOKING (state, booking) {
+      UpsertBooking(booking)
       state.bookings.push(booking)
     }
   },

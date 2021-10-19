@@ -7,7 +7,7 @@ export class Booking {
     arrival_airport_iata: string;
     estimated_time_departure: luxon.DateTime = luxon.DateTime.utc();
     estimated_time_arrival: luxon.DateTime = luxon.DateTime.utc();
-    name: string;
+    passenger_name: string;
 
     public constructor (init?:Partial<Booking>) {
       Object.assign(this, init)
