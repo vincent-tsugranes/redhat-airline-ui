@@ -36,7 +36,9 @@ export async function UpsertBooking (booking: Booking) {
   }
 
   if (response.body !== null) {
-    const data = JSON.parse(response.json.toString()) as Response
-    return data.json
+    const responseJson = JSON.stringify(response.body)
+    console.log('Successfully Booked: ' + response.status + ' - ' + booking.passenger_name)
+    // const data = JSON.parse(response.json.toString()) as Response
+    // return data.json
   }
 }

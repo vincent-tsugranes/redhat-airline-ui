@@ -78,7 +78,7 @@ export default class BookingList extends Vue {
   }
 
   mounted () {
-    console.log('Mounted Booking List Component')
+    // console.log('Mounted Booking List Component')
     this.$store.dispatch('ENSURE_LOADED_BOOKINGS').then(() => {
       this.bookings = this.$store.state.bookings
     })

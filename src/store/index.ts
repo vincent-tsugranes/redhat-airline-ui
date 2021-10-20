@@ -39,7 +39,7 @@ export default new Vuex.Store({
     },
     ADD_BOOKING (state, booking) {
       UpsertBooking(booking)
-      state.bookings.push(booking)
+      // state.bookings.push(booking)
     }
   },
   actions: {
@@ -93,6 +93,7 @@ export default new Vuex.Store({
       return dispatch('FETCH_BOOKINGS')
     },
     FETCH_BOOKINGS: ({ commit, state }) => {
+      /*
       if (state.bookings.length === 0) {
         // console.log('GETTING AIRPORTS')
 
@@ -103,6 +104,10 @@ export default new Vuex.Store({
         // console.log('RETURNING EXISTING AIRPORTS')
         return state.bookings
       }
+      */
+      return GetAllBookings().then(response => {
+        commit('SET_BOOKINGS', response)
+      })
     }
   },
   modules: {},
